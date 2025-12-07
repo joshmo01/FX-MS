@@ -1,0 +1,99 @@
+{
+  "providers": {
+    "refinitiv": {
+      "name": "Refinitiv (LSEG)",
+      "type": "primary",
+      "is_active": true,
+      "priority": 1,
+      "endpoints": {
+        "pricing": "https://api.refinitiv.com/data/pricing/v1",
+        "historical": "https://api.refinitiv.com/data/historical-pricing/v1",
+        "streaming": "wss://streaming.refinitiv.com/websocket"
+      },
+      "auth": {
+        "type": "oauth2",
+        "token_url": "https://api.refinitiv.com/auth/oauth2/v1/token",
+        "scope": "trapi.data.pricing.read"
+      },
+      "rate_limits": {
+        "requests_per_second": 100,
+        "requests_per_day": 100000
+      },
+      "timeout_ms": 5000,
+      "retry_config": {
+        "max_retries": 3,
+        "backoff_multiplier": 2,
+        "initial_delay_ms": 100
+      },
+      "ric_mapping": {
+        "USD": "USD=",
+        "EUR": "EUR=",
+        "GBP": "GBP=",
+        "INR": "INR=",
+        "JPY": "JPY=",
+        "AED": "AED=",
+        "SGD": "SGD=",
+        "AUD": "AUD=",
+        "CAD": "CAD=",
+        "CHF": "CHF="
+      }
+    },
+    "bloomberg": {
+      "name": "Bloomberg",
+      "type": "secondary",
+      "is_active": false,
+      "priority": 2,
+      "endpoints": {
+        "pricing": "https://api.bloomberg.com/eap/catalogs/bsymbols",
+        "historical": "https://api.bloomberg.com/eap/catalogs/history"
+      },
+      "auth": {
+        "type": "api_key",
+        "header_name": "X-Bloomberg-API-Key"
+      },
+      "rate_limits": {
+        "requests_per_second": 50,
+        "requests_per_day": 50000
+      },
+      "timeout_ms": 5000
+    },
+    "ecb": {
+      "name": "European Central Bank",
+      "type": "fallback",
+      "is_active": true,
+      "priority": 3,
+      "endpoints": {
+        "daily_rates": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+        "historical": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml"
+      },
+      "auth": {
+        "type": "none"
+      },
+      "rate_limits": {
+        "requests_per_second": 10,
+        "requests_per_day": 10000
+      },
+      "timeout_ms": 10000,
+      "notes": "Free public API, updates once daily at 16:00 CET"
+    }
+  },
+  "failover_config": {
+    "enabled": true,
+    "failover_order": ["refinitiv", "bloomberg", "ecb"],
+    "health_check_interval_seconds": 60,
+    "circuit_breaker": {
+      "failure_threshold": 5,
+      "recovery_timeout_seconds": 30
+    }
+  },
+  "caching": {
+    "enabled": true,
+    "ttl_seconds": 30,
+    "stale_ttl_seconds": 300,
+    "cache_provider": "redis"
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "last_updated": "2025-01-01T00:00:00Z"
+  }
+}

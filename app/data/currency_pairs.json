@@ -1,0 +1,146 @@
+{
+  "currency_pairs": [
+    {
+      "pair_id": "USDINR",
+      "base_currency": "USD",
+      "quote_currency": "INR",
+      "is_active": true,
+      "spread_bps": 25,
+      "min_spread_bps": 15,
+      "max_spread_bps": 50,
+      "daily_limit_base": 1000000,
+      "reuters_ric": "USD=",
+      "settlement_days": 2,
+      "trading_hours": {
+        "start": "09:00",
+        "end": "17:00",
+        "timezone": "Asia/Kolkata"
+      }
+    },
+    {
+      "pair_id": "EURINR",
+      "base_currency": "EUR",
+      "quote_currency": "INR",
+      "is_active": true,
+      "spread_bps": 30,
+      "min_spread_bps": 20,
+      "max_spread_bps": 60,
+      "daily_limit_base": 800000,
+      "reuters_ric": "EUR=",
+      "settlement_days": 2,
+      "trading_hours": {
+        "start": "09:00",
+        "end": "17:00",
+        "timezone": "Asia/Kolkata"
+      }
+    },
+    {
+      "pair_id": "GBPINR",
+      "base_currency": "GBP",
+      "quote_currency": "INR",
+      "is_active": true,
+      "spread_bps": 30,
+      "min_spread_bps": 20,
+      "max_spread_bps": 60,
+      "daily_limit_base": 600000,
+      "reuters_ric": "GBP=",
+      "settlement_days": 2,
+      "trading_hours": {
+        "start": "09:00",
+        "end": "17:00",
+        "timezone": "Asia/Kolkata"
+      }
+    },
+    {
+      "pair_id": "EURUSD",
+      "base_currency": "EUR",
+      "quote_currency": "USD",
+      "is_active": true,
+      "spread_bps": 10,
+      "min_spread_bps": 5,
+      "max_spread_bps": 25,
+      "daily_limit_base": 5000000,
+      "reuters_ric": "EUR=",
+      "settlement_days": 2,
+      "trading_hours": {
+        "start": "00:00",
+        "end": "23:59",
+        "timezone": "UTC"
+      }
+    },
+    {
+      "pair_id": "GBPUSD",
+      "base_currency": "GBP",
+      "quote_currency": "USD",
+      "is_active": true,
+      "spread_bps": 12,
+      "min_spread_bps": 6,
+      "max_spread_bps": 30,
+      "daily_limit_base": 5000000,
+      "reuters_ric": "GBP=",
+      "settlement_days": 2,
+      "trading_hours": {
+        "start": "00:00",
+        "end": "23:59",
+        "timezone": "UTC"
+      }
+    },
+    {
+      "pair_id": "USDJPY",
+      "base_currency": "USD",
+      "quote_currency": "JPY",
+      "is_active": true,
+      "spread_bps": 15,
+      "min_spread_bps": 8,
+      "max_spread_bps": 35,
+      "daily_limit_base": 5000000,
+      "reuters_ric": "JPY=",
+      "settlement_days": 2,
+      "trading_hours": {
+        "start": "00:00",
+        "end": "23:59",
+        "timezone": "UTC"
+      }
+    },
+    {
+      "pair_id": "AEDINR",
+      "base_currency": "AED",
+      "quote_currency": "INR",
+      "is_active": true,
+      "spread_bps": 35,
+      "min_spread_bps": 25,
+      "max_spread_bps": 70,
+      "daily_limit_base": 2000000,
+      "reuters_ric": "AED=",
+      "settlement_days": 2,
+      "trading_hours": {
+        "start": "09:00",
+        "end": "17:00",
+        "timezone": "Asia/Kolkata"
+      }
+    },
+    {
+      "pair_id": "SGDINR",
+      "base_currency": "SGD",
+      "quote_currency": "INR",
+      "is_active": true,
+      "spread_bps": 30,
+      "min_spread_bps": 20,
+      "max_spread_bps": 55,
+      "daily_limit_base": 1500000,
+      "reuters_ric": "SGD=",
+      "settlement_days": 2,
+      "trading_hours": {
+        "start": "09:00",
+        "end": "17:00",
+        "timezone": "Asia/Kolkata"
+      }
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "last_updated": "2025-01-01T00:00:00Z",
+    "source": "Fintaar.ai FX Configuration",
+    "notes": "spread_bps = basis points (1 bps = 0.01%)"
+  }
+}

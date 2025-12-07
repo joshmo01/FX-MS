@@ -1,0 +1,119 @@
+{
+  "currencies": [
+    {
+      "code": "USD",
+      "name": "US Dollar",
+      "symbol": "$",
+      "decimal_places": 2,
+      "country": "United States",
+      "is_major": true,
+      "is_active": true,
+      "min_amount": 1.00,
+      "max_amount": 10000000.00
+    },
+    {
+      "code": "EUR",
+      "name": "Euro",
+      "symbol": "€",
+      "decimal_places": 2,
+      "country": "European Union",
+      "is_major": true,
+      "is_active": true,
+      "min_amount": 1.00,
+      "max_amount": 10000000.00
+    },
+    {
+      "code": "GBP",
+      "name": "British Pound",
+      "symbol": "£",
+      "decimal_places": 2,
+      "country": "United Kingdom",
+      "is_major": true,
+      "is_active": true,
+      "min_amount": 1.00,
+      "max_amount": 10000000.00
+    },
+    {
+      "code": "INR",
+      "name": "Indian Rupee",
+      "symbol": "₹",
+      "decimal_places": 2,
+      "country": "India",
+      "is_major": true,
+      "is_active": true,
+      "min_amount": 100.00,
+      "max_amount": 500000000.00
+    },
+    {
+      "code": "JPY",
+      "name": "Japanese Yen",
+      "symbol": "¥",
+      "decimal_places": 0,
+      "country": "Japan",
+      "is_major": true,
+      "is_active": true,
+      "min_amount": 100,
+      "max_amount": 1000000000
+    },
+    {
+      "code": "AED",
+      "name": "UAE Dirham",
+      "symbol": "د.إ",
+      "decimal_places": 2,
+      "country": "United Arab Emirates",
+      "is_major": false,
+      "is_active": true,
+      "min_amount": 10.00,
+      "max_amount": 50000000.00
+    },
+    {
+      "code": "SGD",
+      "name": "Singapore Dollar",
+      "symbol": "S$",
+      "decimal_places": 2,
+      "country": "Singapore",
+      "is_major": false,
+      "is_active": true,
+      "min_amount": 1.00,
+      "max_amount": 10000000.00
+    },
+    {
+      "code": "AUD",
+      "name": "Australian Dollar",
+      "symbol": "A$",
+      "decimal_places": 2,
+      "country": "Australia",
+      "is_major": true,
+      "is_active": true,
+      "min_amount": 1.00,
+      "max_amount": 10000000.00
+    },
+    {
+      "code": "CAD",
+      "name": "Canadian Dollar",
+      "symbol": "C$",
+      "decimal_places": 2,
+      "country": "Canada",
+      "is_major": true,
+      "is_active": true,
+      "min_amount": 1.00,
+      "max_amount": 10000000.00
+    },
+    {
+      "code": "CHF",
+      "name": "Swiss Franc",
+      "symbol": "Fr",
+      "decimal_places": 2,
+      "country": "Switzerland",
+      "is_major": true,
+      "is_active": true,
+      "min_amount": 1.00,
+      "max_amount": 10000000.00
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "last_updated": "2025-01-01T00:00:00Z",
+    "source": "Fintaar.ai Reference Data"
+  }
+}
