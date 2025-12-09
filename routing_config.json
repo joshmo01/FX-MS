@@ -1,0 +1,51 @@
+{
+  "routing_objectives": {
+    "BEST_RATE": {
+      "description": "Lowest cost for customer",
+      "priority_weights": {
+        "rate": 0.70,
+        "provider_reliability": 0.15,
+        "settlement_speed": 0.10,
+        "stp_capability": 0.05
+      }
+    },
+    "OPTIMUM": {
+      "description": "Balanced - cost, speed, reliability",
+      "priority_weights": {
+        "rate": 0.40,
+        "provider_reliability": 0.25,
+        "settlement_speed": 0.20,
+        "stp_capability": 0.15
+      }
+    },
+    "FASTEST_EXECUTION": {
+      "description": "Fastest settlement priority",
+      "priority_weights": {
+        "rate": 0.20,
+        "provider_reliability": 0.25,
+        "settlement_speed": 0.45,
+        "stp_capability": 0.10
+      }
+    },
+    "MAX_STP": {
+      "description": "Maximum straight-through processing",
+      "priority_weights": {
+        "rate": 0.25,
+        "provider_reliability": 0.20,
+        "settlement_speed": 0.15,
+        "stp_capability": 0.40
+      }
+    }
+  },
+  "default_objective": "OPTIMUM",
+  "triangulation": {
+    "enabled": true,
+    "max_legs": 2,
+    "bridge_currencies": ["USD", "EUR"],
+    "min_savings_bps": 5
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "last_updated": "2025-01-01T00:00:00Z"
+  }
+}

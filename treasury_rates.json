@@ -1,0 +1,102 @@
+{
+  "treasury_rates": {
+    "USDINR": {
+      "pair": "USDINR",
+      "bid": 84.42,
+      "ask": 84.58,
+      "mid": 84.50,
+      "internal_cost": 84.45,
+      "min_margin_bps": 10,
+      "target_margin_bps": 20,
+      "max_exposure_usd": 10000000,
+      "current_exposure_usd": 2500000,
+      "position": "LONG",
+      "valid_until": "2025-01-01T17:00:00+05:30"
+    },
+    "EURINR": {
+      "pair": "EURINR",
+      "bid": 89.10,
+      "ask": 89.30,
+      "mid": 89.20,
+      "internal_cost": 89.15,
+      "min_margin_bps": 12,
+      "target_margin_bps": 25,
+      "max_exposure_usd": 8000000,
+      "current_exposure_usd": 1000000,
+      "position": "NEUTRAL",
+      "valid_until": "2025-01-01T17:00:00+05:30"
+    },
+    "GBPINR": {
+      "pair": "GBPINR",
+      "bid": 106.35,
+      "ask": 106.65,
+      "mid": 106.50,
+      "internal_cost": 106.40,
+      "min_margin_bps": 15,
+      "target_margin_bps": 28,
+      "max_exposure_usd": 5000000,
+      "current_exposure_usd": 3000000,
+      "position": "SHORT",
+      "valid_until": "2025-01-01T17:00:00+05:30"
+    },
+    "EURUSD": {
+      "pair": "EURUSD",
+      "bid": 1.0550,
+      "ask": 1.0564,
+      "mid": 1.0557,
+      "internal_cost": 1.0553,
+      "min_margin_bps": 5,
+      "target_margin_bps": 12,
+      "max_exposure_usd": 20000000,
+      "current_exposure_usd": 5000000,
+      "position": "LONG",
+      "valid_until": "2025-01-01T17:00:00+05:30"
+    },
+    "AEDINR": {
+      "pair": "AEDINR",
+      "bid": 22.98,
+      "ask": 23.04,
+      "mid": 23.01,
+      "internal_cost": 22.99,
+      "min_margin_bps": 18,
+      "target_margin_bps": 32,
+      "max_exposure_usd": 3000000,
+      "current_exposure_usd": 500000,
+      "position": "NEUTRAL",
+      "valid_until": "2025-01-01T17:00:00+05:30"
+    }
+  },
+  "treasury_rules": {
+    "position_adjustment": {
+      "LONG": {
+        "sell_rate_adjustment_bps": -3,
+        "buy_rate_adjustment_bps": 3,
+        "description": "Encourage selling to reduce long position"
+      },
+      "SHORT": {
+        "sell_rate_adjustment_bps": 3,
+        "buy_rate_adjustment_bps": -3,
+        "description": "Encourage buying to cover short position"
+      },
+      "NEUTRAL": {
+        "sell_rate_adjustment_bps": 0,
+        "buy_rate_adjustment_bps": 0,
+        "description": "No position bias"
+      }
+    },
+    "exposure_limits": {
+      "warning_threshold_pct": 70,
+      "soft_limit_pct": 90,
+      "hard_limit_pct": 100
+    },
+    "rate_validity_minutes": 5
+  },
+  "interbank_reference": {
+    "source": "REFINITIV",
+    "refresh_interval_seconds": 30
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "last_updated": "2025-01-01T09:00:00+05:30"
+  }
+}

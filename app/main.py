@@ -1,149 +1,33 @@
-"""
-FX Currency Conversion Microservice
-
-Main application entry point for the FastAPI service.
-"""
-import logging
-from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from datetime import datetime
-import uuid
-from fastapi.responses import HTMLResponse
-from pathlib import Path
-from app.api.conversion import router as conversion_router
-from app.api.pricing import router as pricing_router  # ADD THIS IMPORT
-from app.core.config import get_settings
+from app.api.multi_rail_api import router as multi_rail_router
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__)
-
-settings = get_settings()
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Application lifespan handler for startup/shutdown events"""
-    # Startup
-    logger.info(f"Starting {settings.app_name} v{settings.app_version}")
-    logger.info(f"Environment: {settings.environment}")
-    yield
-    # Shutdown
-    logger.info("Shutting down FX Conversion Service")
-
-
-# Create FastAPI application
 app = FastAPI(
-    title=settings.app_name,
-    version=settings.app_version,
-    description="""
-## FX Currency Conversion Microservice
-
-A high-performance microservice for real-time currency conversion with
-integration to Refinitiv (Reuters) for live exchange rates.
-
-### Features
-
-* **Real-time Exchange Rates** - Live rates from Refinitiv with fallback providers
-* **Bid/Ask Spreads** - Proper handling of buy/sell directions
-* **Multi-Currency Support** - Major and exotic currency pairs
-* **Rate Caching** - Intelligent caching to reduce API calls
-* **Quote Generation** - Get quotes before committing to conversion
-
-### API Versioning
-
-All endpoints are versioned under `/api/v1/fx/`
-
-### Authentication
-
-API key authentication required (when enabled):
-```
-X-API-Key: your-api-key
-```
-    """,
-    docs_url="/docs",
-    redoc_url="/redoc",
-    openapi_url="/openapi.json",
-    lifespan=lifespan
+    title="FX Smart Routing Engine",
+    description="Universal Currency Conversion: Fiat, CBDC, Stablecoin with Atomic Swaps",
+    version="2.0.0"
 )
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
-    allow_credentials=True,
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Include v2.0 multi-rail routes
+app.include_router(multi_rail_router)
 
-# Request ID middleware
-@app.middleware("http")
-async def add_request_id(request: Request, call_next):
-    """Add unique request ID to each request"""
-    request_id = str(uuid.uuid4())
-    request.state.request_id = request_id
-    response = await call_next(request)
-    response.headers["X-Request-ID"] = request_id
-    return response
-
-
-# Global exception handler
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    """Handle uncaught exceptions"""
-    logger.error(f"Unhandled exception: {exc}", exc_info=True)
-    return JSONResponse(
-        status_code=500,
-        content={
-            "success": False,
-            "error": {
-                "code": "INTERNAL_ERROR",
-                "message": "An unexpected error occurred"
-            },
-            "timestamp": datetime.utcnow().isoformat(),
-            "request_id": getattr(request.state, 'request_id', None)
-        }
-    )
-
-
-# Include routers
-app.include_router(conversion_router)
-app.include_router(pricing_router)  # ADD THIS LINE HERE
-
-
-# Root endpoint
-@app.get("/", tags=["Root"])
-async def root():
-    """Root endpoint with service information"""
+@app.get("/")
+def root():
     return {
-        "service": settings.app_name,
-        "version": settings.app_version,
+        "service": "FX Smart Routing Engine",
+        "version": "2.0.0",
         "status": "running",
-        "docs": "/docs",
-        "health": "/api/v1/fx/health"
+        "features": ["9 conversion types", "CBDC", "Stablecoin", "mBridge", "Atomic Swaps"],
+        "docs": "/docs"
     }
 
-@app.get("/ui", response_class=HTMLResponse, include_in_schema=False)
-async def pricing_ui():
-    """Serve the FX Pricing UI"""
-    html_path = Path(__file__).parent / "static" / "index.html"
-    if html_path.exists():
-        return html_path.read_text()
-    return "<h1>UI not found</h1>"
-
-
-# Run with uvicorn when executed directly
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(
-        "app.main:app",
-        host=settings.host,
-        port=settings.port,
-        reload=settings.debug
-    )
+@app.get("/api/v1/fx/health")
+def health():
+    return {"status": "healthy", "version": "2.0.0"}
