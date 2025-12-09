@@ -1,0 +1,19 @@
+{
+  "rates": {
+    "USDINR": {"bid": 84.42, "ask": 84.58, "mid": 84.50, "min_margin_bps": 10, "position": "LONG"},
+    "EURINR": {"bid": 89.10, "ask": 89.30, "mid": 89.20, "min_margin_bps": 12, "position": "NEUTRAL"},
+    "GBPINR": {"bid": 106.35, "ask": 106.65, "mid": 106.50, "min_margin_bps": 15, "position": "SHORT"},
+    "EURUSD": {"bid": 1.0550, "ask": 1.0564, "mid": 1.0557, "min_margin_bps": 5, "position": "LONG"},
+    "AEDINR": {"bid": 22.98, "ask": 23.04, "mid": 23.01, "min_margin_bps": 18, "position": "NEUTRAL"},
+    "GBPUSD": {"bid": 1.2590, "ask": 1.2610, "mid": 1.2600, "min_margin_bps": 8, "position": "NEUTRAL"},
+    "USDJPY": {"bid": 149.80, "ask": 150.10, "mid": 149.95, "min_margin_bps": 6, "position": "SHORT"},
+    "USDSGD": {"bid": 1.3420, "ask": 1.3440, "mid": 1.3430, "min_margin_bps": 10, "position": "NEUTRAL"},
+    "USDAED": {"bid": 3.6725, "ask": 3.6735, "mid": 3.6730, "min_margin_bps": 5, "position": "NEUTRAL"},
+    "USDCNY": {"bid": 7.2380, "ask": 7.2420, "mid": 7.2400, "min_margin_bps": 12, "position": "NEUTRAL"}
+  },
+  "position_adjustments": {
+    "LONG": {"sell_adjustment_bps": -3, "buy_adjustment_bps": 3},
+    "SHORT": {"sell_adjustment_bps": 3, "buy_adjustment_bps": -3},
+    "NEUTRAL": {"sell_adjustment_bps": 0, "buy_adjustment_bps": 0}
+  }
+}

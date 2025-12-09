@@ -1,0 +1,73 @@
+{
+  "providers": {
+    "REFINITIV": {
+      "name": "Refinitiv",
+      "type": "MARKET_DATA",
+      "reliability_score": 0.98,
+      "avg_latency_ms": 50,
+      "markup_bps": 0,
+      "supported_pairs": ["USDINR", "EURINR", "GBPINR", "EURUSD", "GBPUSD", "USDJPY", "USDSGD", "USDAED", "USDCNY"],
+      "operating_hours": "24x5"
+    },
+    "TREASURY_INTERNAL": {
+      "name": "Internal Treasury",
+      "type": "INTERNAL",
+      "reliability_score": 0.99,
+      "avg_latency_ms": 10,
+      "markup_bps": 15,
+      "supported_pairs": ["USDINR", "EURINR", "GBPINR", "AEDINR"],
+      "operating_hours": "24x7"
+    },
+    "BANK_OF_AMERICA": {
+      "name": "Bank of America",
+      "type": "CORRESPONDENT",
+      "reliability_score": 0.97,
+      "avg_latency_ms": 100,
+      "markup_bps": 8,
+      "supported_pairs": ["EURUSD", "GBPUSD", "USDJPY"],
+      "operating_hours": "24x5"
+    },
+    "CITI": {
+      "name": "Citibank",
+      "type": "CORRESPONDENT",
+      "reliability_score": 0.96,
+      "avg_latency_ms": 120,
+      "markup_bps": 10,
+      "supported_pairs": ["USDINR", "EURUSD", "GBPUSD", "USDJPY", "USDSGD"],
+      "operating_hours": "24x5"
+    },
+    "HDFC_BANK": {
+      "name": "HDFC Bank",
+      "type": "DOMESTIC",
+      "reliability_score": 0.95,
+      "avg_latency_ms": 80,
+      "markup_bps": 18,
+      "supported_pairs": ["USDINR", "EURINR", "GBPINR", "AEDINR"],
+      "operating_hours": "9x5_IST"
+    },
+    "ICICI_BANK": {
+      "name": "ICICI Bank",
+      "type": "DOMESTIC",
+      "reliability_score": 0.94,
+      "avg_latency_ms": 90,
+      "markup_bps": 20,
+      "supported_pairs": ["USDINR", "EURINR", "GBPINR", "AEDINR"],
+      "operating_hours": "9x5_IST"
+    },
+    "WISE": {
+      "name": "Wise",
+      "type": "FINTECH",
+      "reliability_score": 0.92,
+      "avg_latency_ms": 200,
+      "markup_bps": 4,
+      "supported_pairs": ["USDINR", "EURINR", "GBPINR", "EURUSD", "GBPUSD"],
+      "operating_hours": "24x7"
+    }
+  },
+  "routing_objectives": {
+    "BEST_RATE": {"rate_weight": 0.70, "reliability_weight": 0.15, "speed_weight": 0.10, "stp_weight": 0.05},
+    "OPTIMUM": {"rate_weight": 0.40, "reliability_weight": 0.25, "speed_weight": 0.20, "stp_weight": 0.15},
+    "FASTEST_EXECUTION": {"rate_weight": 0.15, "reliability_weight": 0.20, "speed_weight": 0.45, "stp_weight": 0.20},
+    "MAX_STP": {"rate_weight": 0.20, "reliability_weight": 0.20, "speed_weight": 0.20, "stp_weight": 0.40}
+  }
+}
