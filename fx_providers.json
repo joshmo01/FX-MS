@@ -1,0 +1,164 @@
+{
+  "providers": {
+    "REFINITIV": {
+      "name": "Refinitiv (LSEG)",
+      "type": "MARKET_DATA",
+      "is_active": true,
+      "capabilities": {
+        "real_time_rates": true,
+        "executable_quotes": false,
+        "settlement": false,
+        "stp_enabled": false
+      },
+      "supported_pairs": ["*"],
+      "reliability_score": 0.98,
+      "avg_latency_ms": 50,
+      "markup_bps": 0,
+      "notes": "Market data only, used for rate discovery"
+    },
+    "TREASURY_INTERNAL": {
+      "name": "Internal Treasury",
+      "type": "INTERNAL",
+      "is_active": true,
+      "capabilities": {
+        "real_time_rates": true,
+        "executable_quotes": true,
+        "settlement": true,
+        "stp_enabled": true
+      },
+      "supported_pairs": ["USDINR", "EURINR", "GBPINR", "AEDINR"],
+      "reliability_score": 0.99,
+      "avg_latency_ms": 10,
+      "settlement_hours": 4,
+      "daily_limit_usd": 50000000,
+      "markup_bps": 15,
+      "operating_hours": {
+        "start": "09:00",
+        "end": "17:00",
+        "timezone": "Asia/Kolkata"
+      }
+    },
+    "BANK_OF_AMERICA": {
+      "name": "Bank of America",
+      "type": "CORRESPONDENT_BANK",
+      "is_active": true,
+      "capabilities": {
+        "real_time_rates": true,
+        "executable_quotes": true,
+        "settlement": true,
+        "stp_enabled": true
+      },
+      "supported_pairs": ["USDINR", "EURUSD", "GBPUSD", "USDJPY", "EURINR"],
+      "reliability_score": 0.97,
+      "avg_latency_ms": 100,
+      "settlement_hours": 24,
+      "daily_limit_usd": 100000000,
+      "markup_bps": 8,
+      "min_amount_usd": 10000
+    },
+    "CITI": {
+      "name": "Citibank",
+      "type": "CORRESPONDENT_BANK",
+      "is_active": true,
+      "capabilities": {
+        "real_time_rates": true,
+        "executable_quotes": true,
+        "settlement": true,
+        "stp_enabled": true
+      },
+      "supported_pairs": ["USDINR", "EURUSD", "GBPUSD", "USDJPY", "AEDINR", "SGDINR"],
+      "reliability_score": 0.96,
+      "avg_latency_ms": 120,
+      "settlement_hours": 24,
+      "daily_limit_usd": 150000000,
+      "markup_bps": 10,
+      "min_amount_usd": 5000
+    },
+    "HDFC_BANK": {
+      "name": "HDFC Bank",
+      "type": "LOCAL_BANK",
+      "is_active": true,
+      "capabilities": {
+        "real_time_rates": true,
+        "executable_quotes": true,
+        "settlement": true,
+        "stp_enabled": true
+      },
+      "supported_pairs": ["USDINR", "EURINR", "GBPINR", "AEDINR", "SGDINR"],
+      "reliability_score": 0.95,
+      "avg_latency_ms": 80,
+      "settlement_hours": 4,
+      "daily_limit_usd": 25000000,
+      "markup_bps": 12,
+      "min_amount_usd": 100
+    },
+    "ICICI_BANK": {
+      "name": "ICICI Bank",
+      "type": "LOCAL_BANK",
+      "is_active": true,
+      "capabilities": {
+        "real_time_rates": true,
+        "executable_quotes": true,
+        "settlement": true,
+        "stp_enabled": true
+      },
+      "supported_pairs": ["USDINR", "EURINR", "GBPINR", "JPYINR"],
+      "reliability_score": 0.94,
+      "avg_latency_ms": 90,
+      "settlement_hours": 4,
+      "daily_limit_usd": 20000000,
+      "markup_bps": 14,
+      "min_amount_usd": 100
+    },
+    "FOREX_DEALER_A": {
+      "name": "Alpha FX Dealers",
+      "type": "FX_DEALER",
+      "is_active": true,
+      "capabilities": {
+        "real_time_rates": true,
+        "executable_quotes": true,
+        "settlement": true,
+        "stp_enabled": false
+      },
+      "supported_pairs": ["USDINR", "EURINR", "GBPINR", "AEDINR"],
+      "reliability_score": 0.88,
+      "avg_latency_ms": 200,
+      "settlement_hours": 48,
+      "daily_limit_usd": 5000000,
+      "markup_bps": 5,
+      "min_amount_usd": 1000,
+      "notes": "Best rates but slower settlement, no STP"
+    },
+    "WISE": {
+      "name": "Wise (TransferWise)",
+      "type": "FINTECH",
+      "is_active": true,
+      "capabilities": {
+        "real_time_rates": true,
+        "executable_quotes": true,
+        "settlement": true,
+        "stp_enabled": true
+      },
+      "supported_pairs": ["USDINR", "EURINR", "GBPINR", "EURUSD", "GBPUSD"],
+      "reliability_score": 0.93,
+      "avg_latency_ms": 150,
+      "settlement_hours": 12,
+      "daily_limit_usd": 1000000,
+      "markup_bps": 6,
+      "min_amount_usd": 10,
+      "max_amount_usd": 500000
+    }
+  },
+  "provider_priority_by_type": {
+    "INTERNAL": 1,
+    "LOCAL_BANK": 2,
+    "CORRESPONDENT_BANK": 3,
+    "FINTECH": 4,
+    "FX_DEALER": 5,
+    "MARKET_DATA": 99
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "last_updated": "2025-01-01T00:00:00Z"
+  }
+}

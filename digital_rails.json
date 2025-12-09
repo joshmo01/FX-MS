@@ -1,0 +1,298 @@
+{
+  "digital_rails": {
+    "CBDC_DOMESTIC": {
+      "rail_id": "CBDC_DOMESTIC",
+      "name": "Domestic CBDC Rail",
+      "type": "CBDC",
+      "description": "Single-country CBDC transactions",
+      "is_active": true,
+      "supported_operations": ["FIAT_TO_CBDC", "CBDC_TO_FIAT", "CBDC_TRANSFER"],
+      "settlement_type": "INSTANT",
+      "avg_settlement_seconds": 5,
+      "operating_hours": "24x7",
+      "fee_structure": {
+        "fiat_to_cbdc_bps": 0,
+        "cbdc_to_fiat_bps": 0,
+        "cbdc_transfer_bps": 0
+      },
+      "compliance": {
+        "kyc_level": "BANK_KYC",
+        "aml_screening": "REAL_TIME",
+        "reporting": "AUTOMATIC"
+      }
+    },
+    "MBRIDGE": {
+      "rail_id": "MBRIDGE",
+      "name": "mBridge (Multi-CBDC Platform)",
+      "type": "CBDC_CROSS_BORDER",
+      "description": "BIS Innovation Hub multi-CBDC platform for wholesale cross-border payments",
+      "is_active": true,
+      "participants": ["e-CNY", "e-HKD", "e-THB", "e-AED"],
+      "supported_operations": ["CBDC_TO_CBDC", "PVP_SETTLEMENT"],
+      "settlement_type": "ATOMIC",
+      "avg_settlement_seconds": 10,
+      "operating_hours": "24x7",
+      "min_amount_usd": 100000,
+      "fee_structure": {
+        "cross_border_bps": 5,
+        "fx_spread_bps": 8
+      },
+      "compliance": {
+        "kyc_level": "CENTRAL_BANK_VALIDATED",
+        "aml_screening": "ORIGINATING_CB",
+        "sanctions_check": "BOTH_JURISDICTIONS",
+        "reporting": "AUTOMATIC"
+      },
+      "benefits": [
+        "Atomic PvP settlement",
+        "No correspondent banking",
+        "Real-time FX",
+        "Reduced counterparty risk"
+      ]
+    },
+    "PROJECT_NEXUS": {
+      "rail_id": "PROJECT_NEXUS",
+      "name": "Project Nexus (ASEAN+ Linkage)",
+      "type": "FAST_PAYMENT_LINKAGE",
+      "description": "Interlinked fast payment systems - future CBDC extension",
+      "is_active": true,
+      "participants": {
+        "India": {"system": "UPI", "currency": "INR", "cbdc_future": "e-INR"},
+        "Singapore": {"system": "PayNow", "currency": "SGD", "cbdc_future": "e-SGD"},
+        "Malaysia": {"system": "DuitNow", "currency": "MYR", "cbdc_future": null},
+        "Thailand": {"system": "PromptPay", "currency": "THB", "cbdc_future": "e-THB"},
+        "Philippines": {"system": "InstaPay", "currency": "PHP", "cbdc_future": null}
+      },
+      "settlement_type": "NEAR_INSTANT",
+      "avg_settlement_seconds": 60,
+      "operating_hours": "24x7",
+      "fee_structure": {
+        "cross_border_bps": 15,
+        "fx_spread_bps": 20
+      },
+      "compliance": {
+        "kyc_level": "LOCAL_BANK",
+        "aml_screening": "BILATERAL",
+        "reporting": "LOCAL_FIU"
+      }
+    },
+    "STABLECOIN_BRIDGE": {
+      "rail_id": "STABLECOIN_BRIDGE",
+      "name": "Stablecoin Bridge Rail",
+      "type": "STABLECOIN",
+      "description": "Fiat ↔ Stablecoin ↔ Fiat conversion via regulated exchanges",
+      "is_active": true,
+      "supported_stablecoins": ["USDT", "USDC", "EURC", "PYUSD", "XSGD"],
+      "supported_operations": ["FIAT_TO_STABLE", "STABLE_TO_FIAT", "STABLE_TO_STABLE"],
+      "preferred_networks": {
+        "high_value": ["ETHEREUM"],
+        "medium_value": ["POLYGON", "AVALANCHE"],
+        "low_value": ["SOLANA", "TRON"]
+      },
+      "settlement_type": "VARIABLE",
+      "settlement_by_network": {
+        "ETHEREUM": 180,
+        "POLYGON": 10,
+        "SOLANA": 5,
+        "TRON": 10,
+        "AVALANCHE": 5
+      },
+      "fee_structure": {
+        "on_ramp_bps": 50,
+        "off_ramp_bps": 50,
+        "network_fee": "VARIABLE"
+      },
+      "compliance": {
+        "kyc_level": "EXCHANGE_KYC",
+        "travel_rule": "REQUIRED",
+        "aml_screening": "CHAINALYSIS",
+        "sanctions_check": "REAL_TIME"
+      }
+    },
+    "HYBRID_CBDC_STABLE": {
+      "rail_id": "HYBRID_CBDC_STABLE",
+      "name": "Hybrid CBDC-Stablecoin Rail",
+      "type": "HYBRID",
+      "description": "Bridge between CBDC and Stablecoin ecosystems",
+      "is_active": false,
+      "status": "EXPERIMENTAL",
+      "use_cases": [
+        "CBDC countries to non-CBDC countries via stablecoin",
+        "Regulatory arbitrage optimization"
+      ],
+      "compliance": {
+        "regulatory_approval": "REQUIRED",
+        "kyc_level": "ENHANCED"
+      }
+    }
+  },
+  "on_off_ramp_providers": {
+    "CIRCLE": {
+      "name": "Circle",
+      "type": "REGULATED_ISSUER",
+      "is_active": true,
+      "supported_stablecoins": ["USDC", "EURC"],
+      "supported_fiat": ["USD", "EUR", "GBP"],
+      "on_ramp": {
+        "methods": ["WIRE", "ACH", "SEPA"],
+        "min_amount_usd": 100,
+        "max_amount_usd": 10000000,
+        "settlement_hours": 1,
+        "fee_bps": 0
+      },
+      "off_ramp": {
+        "methods": ["WIRE", "ACH", "SEPA"],
+        "min_amount_usd": 100,
+        "max_amount_usd": 10000000,
+        "settlement_hours": 1,
+        "fee_bps": 0
+      },
+      "compliance": {
+        "kyc_required": true,
+        "institutional_only": false,
+        "jurisdictions": ["US", "EU", "UK", "SG"]
+      },
+      "reliability_score": 0.99,
+      "stp_enabled": true
+    },
+    "COINBASE_PRIME": {
+      "name": "Coinbase Prime",
+      "type": "EXCHANGE",
+      "is_active": true,
+      "supported_stablecoins": ["USDC", "USDT", "PYUSD"],
+      "supported_fiat": ["USD", "EUR", "GBP"],
+      "on_ramp": {
+        "methods": ["WIRE", "ACH"],
+        "min_amount_usd": 1000,
+        "max_amount_usd": 50000000,
+        "settlement_hours": 4,
+        "fee_bps": 20
+      },
+      "off_ramp": {
+        "methods": ["WIRE", "ACH"],
+        "min_amount_usd": 1000,
+        "max_amount_usd": 50000000,
+        "settlement_hours": 24,
+        "fee_bps": 25
+      },
+      "compliance": {
+        "kyc_required": true,
+        "institutional_only": true,
+        "jurisdictions": ["US", "EU", "UK", "SG", "JP"]
+      },
+      "reliability_score": 0.97,
+      "stp_enabled": true
+    },
+    "KRAKEN_INSTITUTIONAL": {
+      "name": "Kraken Institutional",
+      "type": "EXCHANGE",
+      "is_active": true,
+      "supported_stablecoins": ["USDT", "USDC"],
+      "supported_fiat": ["USD", "EUR", "GBP", "CAD", "AUD", "JPY"],
+      "on_ramp": {
+        "methods": ["WIRE", "SEPA"],
+        "min_amount_usd": 500,
+        "max_amount_usd": 25000000,
+        "settlement_hours": 2,
+        "fee_bps": 15
+      },
+      "off_ramp": {
+        "methods": ["WIRE", "SEPA"],
+        "min_amount_usd": 500,
+        "max_amount_usd": 25000000,
+        "settlement_hours": 24,
+        "fee_bps": 20
+      },
+      "compliance": {
+        "kyc_required": true,
+        "institutional_only": false,
+        "jurisdictions": ["US", "EU", "UK", "CA", "AU", "JP"]
+      },
+      "reliability_score": 0.95,
+      "stp_enabled": true
+    },
+    "STRAITSX": {
+      "name": "StraitsX",
+      "type": "REGULATED_ISSUER",
+      "is_active": true,
+      "supported_stablecoins": ["XSGD"],
+      "supported_fiat": ["SGD"],
+      "on_ramp": {
+        "methods": ["FAST", "GIRO"],
+        "min_amount_usd": 100,
+        "max_amount_usd": 5000000,
+        "settlement_hours": 1,
+        "fee_bps": 0
+      },
+      "off_ramp": {
+        "methods": ["FAST", "GIRO"],
+        "min_amount_usd": 100,
+        "max_amount_usd": 5000000,
+        "settlement_hours": 1,
+        "fee_bps": 10
+      },
+      "compliance": {
+        "kyc_required": true,
+        "institutional_only": false,
+        "jurisdictions": ["SG"]
+      },
+      "reliability_score": 0.94,
+      "stp_enabled": true
+    },
+    "RBI_PARTNER_BANK": {
+      "name": "RBI Partner Bank (e-₹)",
+      "type": "CBDC_ISSUER",
+      "is_active": true,
+      "supported_cbdc": ["e-INR"],
+      "supported_fiat": ["INR"],
+      "participating_banks": ["SBI", "HDFC", "ICICI", "KOTAK"],
+      "on_ramp": {
+        "methods": ["BANK_TRANSFER", "UPI"],
+        "min_amount_usd": 1,
+        "max_amount_usd": 2400,
+        "settlement_hours": 0,
+        "fee_bps": 0
+      },
+      "off_ramp": {
+        "methods": ["BANK_TRANSFER", "UPI"],
+        "min_amount_usd": 1,
+        "max_amount_usd": 2400,
+        "settlement_hours": 0,
+        "fee_bps": 0
+      },
+      "compliance": {
+        "kyc_required": true,
+        "aadhaar_ekyc": true,
+        "jurisdictions": ["IN"]
+      },
+      "reliability_score": 0.99,
+      "stp_enabled": true
+    }
+  },
+  "route_preferences": {
+    "CBDC_PREFERRED": {
+      "description": "Prefer CBDC rails when available",
+      "order": ["CBDC_DOMESTIC", "MBRIDGE", "PROJECT_NEXUS", "STABLECOIN_BRIDGE", "FIAT"]
+    },
+    "STABLECOIN_PREFERRED": {
+      "description": "Prefer stablecoin rails for cost optimization",
+      "order": ["STABLECOIN_BRIDGE", "CBDC_DOMESTIC", "FIAT"]
+    },
+    "FIAT_PREFERRED": {
+      "description": "Traditional fiat rails preferred",
+      "order": ["FIAT", "CBDC_DOMESTIC", "STABLECOIN_BRIDGE"]
+    },
+    "FASTEST": {
+      "description": "Fastest available rail",
+      "order": ["CBDC_DOMESTIC", "STABLECOIN_BRIDGE", "MBRIDGE", "FIAT"]
+    },
+    "LOWEST_COST": {
+      "description": "Lowest cost rail",
+      "order": ["CBDC_DOMESTIC", "MBRIDGE", "STABLECOIN_BRIDGE", "FIAT"]
+    }
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "last_updated": "2025-01-01T00:00:00Z"
+  }
+}

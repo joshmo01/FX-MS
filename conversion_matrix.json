@@ -1,0 +1,151 @@
+{
+  "conversion_matrix": {
+    "FIAT_TO_FIAT": {
+      "enabled": true,
+      "routes": ["DIRECT", "TRIANGULATED", "CORRESPONDENT"],
+      "description": "Traditional FX conversion"
+    },
+    "FIAT_TO_CBDC": {
+      "enabled": true,
+      "routes": ["DIRECT_MINT", "FX_THEN_MINT"],
+      "description": "Fiat currency to CBDC (same or different country)"
+    },
+    "CBDC_TO_FIAT": {
+      "enabled": true,
+      "routes": ["DIRECT_REDEEM", "REDEEM_THEN_FX"],
+      "description": "CBDC redemption to fiat"
+    },
+    "CBDC_TO_CBDC": {
+      "enabled": true,
+      "routes": ["MBRIDGE", "REDEEM_FX_MINT", "PROJECT_NEXUS"],
+      "description": "Cross-border CBDC via mBridge or redemption path"
+    },
+    "FIAT_TO_STABLECOIN": {
+      "enabled": true,
+      "routes": ["DIRECT_MINT", "ON_RAMP_EXCHANGE"],
+      "description": "Fiat to stablecoin via issuer or exchange"
+    },
+    "STABLECOIN_TO_FIAT": {
+      "enabled": true,
+      "routes": ["DIRECT_REDEEM", "OFF_RAMP_EXCHANGE"],
+      "description": "Stablecoin redemption to fiat"
+    },
+    "STABLECOIN_TO_STABLECOIN": {
+      "enabled": true,
+      "routes": ["DEX_SWAP", "CEX_SWAP", "BRIDGE_PROTOCOL"],
+      "description": "Stablecoin to stablecoin conversion"
+    },
+    "CBDC_TO_STABLECOIN": {
+      "enabled": true,
+      "routes": ["CBDC_FIAT_STABLE", "CEX_BRIDGE", "MBRIDGE_HYBRID", "DEX_LIQUIDITY", "ATOMIC_SWAP"],
+      "description": "CBDC to stablecoin via multiple bridge options",
+      "route_details": {
+        "CBDC_FIAT_STABLE": {"legs": 2, "fee_bps": 25, "settlement": "5h", "regulated": true},
+        "CEX_BRIDGE": {"legs": 2, "fee_bps": 50, "settlement": "2h", "regulated": true},
+        "MBRIDGE_HYBRID": {"legs": 3, "fee_bps": 38, "settlement": "1h", "regulated": true, "recommended": true},
+        "DEX_LIQUIDITY": {"legs": 2, "fee_bps": 35, "settlement": "10m", "regulated": false, "experimental": true},
+        "ATOMIC_SWAP": {"legs": 1, "fee_bps": 5, "settlement": "5m", "regulated": false, "experimental": true, "best": true}
+      }
+    },
+    "STABLECOIN_TO_CBDC": {
+      "enabled": true,
+      "routes": ["STABLE_FIAT_CBDC", "CEX_BRIDGE", "OTC_TRADE", "LIQUIDITY_POOL", "ATOMIC_SWAP"],
+      "description": "Stablecoin to CBDC via multiple bridge options",
+      "route_details": {
+        "STABLE_FIAT_CBDC": {"legs": 2, "fee_bps": 25, "settlement": "5h", "regulated": true},
+        "CEX_BRIDGE": {"legs": 2, "fee_bps": 50, "settlement": "2h", "regulated": true},
+        "OTC_TRADE": {"legs": 1, "fee_bps": 15, "settlement": "T+1", "regulated": true},
+        "LIQUIDITY_POOL": {"legs": 2, "fee_bps": 40, "settlement": "15m", "regulated": false, "experimental": true},
+        "ATOMIC_SWAP": {"legs": 1, "fee_bps": 5, "settlement": "5m", "regulated": false, "experimental": true, "best": true}
+      }
+    }
+  },
+  "route_definitions": {
+    "DIRECT": {
+      "legs": 1,
+      "description": "Direct conversion without intermediary"
+    },
+    "TRIANGULATED": {
+      "legs": 2,
+      "bridge_currencies": ["USD", "EUR"],
+      "description": "Via bridge currency for better rate"
+    },
+    "CORRESPONDENT": {
+      "legs": 1,
+      "description": "Via correspondent bank"
+    },
+    "DIRECT_MINT": {
+      "legs": 1,
+      "description": "Direct minting of digital currency"
+    },
+    "FX_THEN_MINT": {
+      "legs": 2,
+      "description": "FX conversion then mint digital currency"
+    },
+    "DIRECT_REDEEM": {
+      "legs": 1,
+      "description": "Direct redemption to fiat"
+    },
+    "REDEEM_THEN_FX": {
+      "legs": 2,
+      "description": "Redeem then FX conversion"
+    },
+    "MBRIDGE": {
+      "legs": 2,
+      "description": "Cross-border CBDC via mBridge platform"
+    },
+    "REDEEM_FX_MINT": {
+      "legs": 3,
+      "description": "Redeem source CBDC, FX, mint target CBDC"
+    },
+    "ON_RAMP_EXCHANGE": {
+      "legs": 2,
+      "description": "Fiat deposit then purchase stablecoin"
+    },
+    "OFF_RAMP_EXCHANGE": {
+      "legs": 2,
+      "description": "Sell stablecoin then fiat withdrawal"
+    },
+    "DEX_SWAP": {
+      "legs": 1,
+      "description": "Decentralized exchange swap"
+    },
+    "CEX_SWAP": {
+      "legs": 1,
+      "description": "Centralized exchange swap"
+    },
+    "BRIDGE_PROTOCOL": {
+      "legs": 2,
+      "description": "Cross-chain bridge protocol"
+    },
+    "CBDC_FIAT_STABLE": {
+      "legs": 3,
+      "description": "CBDC → Fiat → Stablecoin"
+    },
+    "STABLE_FIAT_CBDC": {
+      "legs": 3,
+      "description": "Stablecoin → Fiat → CBDC"
+    },
+    "AUTHORIZED_BRIDGE": {
+      "legs": 2,
+      "description": "Authorized institutional bridge (future)"
+    }
+  },
+  "atomic_swaps": {
+    "enabled": false,
+    "status": "EXPERIMENTAL",
+    "supported_pairs": [],
+    "description": "Direct atomic swaps between CBDC and Stablecoin (future capability)"
+  },
+  "path_optimization": {
+    "max_legs": 4,
+    "max_intermediaries": 2,
+    "prefer_regulated_paths": true,
+    "avoid_unregulated_stablecoins": false,
+    "min_liquidity_score": 40
+  },
+  "metadata": {
+    "version": "2.0.0",
+    "last_updated": "2025-01-01T00:00:00Z"
+  }
+}
