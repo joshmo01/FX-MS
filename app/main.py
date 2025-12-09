@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.multi_rail_api import router as multi_rail_router
+from app.api.routing_api import router as routing_router
 
 app = FastAPI(
     title="FX Smart Routing Engine",
-    description="Universal Currency Conversion: Fiat, CBDC, Stablecoin with Atomic Swaps",
+    description="Universal Currency Conversion with Treasury Management, Customer Tiers, and Multi-Rail Routing",
     version="2.0.0"
 )
 
@@ -15,7 +16,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include v2.0 multi-rail routes
+# Include routers
+app.include_router(routing_router)
 app.include_router(multi_rail_router)
 
 @app.get("/")
@@ -24,7 +26,17 @@ def root():
         "service": "FX Smart Routing Engine",
         "version": "2.0.0",
         "status": "running",
-        "features": ["9 conversion types", "CBDC", "Stablecoin", "mBridge", "Atomic Swaps"],
+        "features": [
+            "Treasury rate management",
+            "Customer tier pricing",
+            "7 FX providers",
+            "4 routing objectives",
+            "9 conversion types",
+            "CBDC support",
+            "Stablecoin support",
+            "mBridge routing",
+            "Atomic swaps"
+        ],
         "docs": "/docs"
     }
 
