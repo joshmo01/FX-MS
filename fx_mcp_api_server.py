@@ -1,6 +1,7 @@
 """
 FX Smart Routing MCP Server - API Integration
 Calls FastAPI endpoints for FX routing recommendations
+Deals tools
 """
 from mcp.server.fastmcp import FastMCP
 from pydantic import BaseModel, Field
