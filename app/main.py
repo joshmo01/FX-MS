@@ -1,45 +1,51 @@
+"""
+FX Smart Routing Engine v2.1.0
+Main FastAPI Application
+"""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.multi_rail_api import router as multi_rail_router
+
 from app.api.routing_api import router as routing_router
+from app.api.multi_rail_api import router as multi_rail_router
+from app.api.deals_api import router as deals_router
+from app.api.chat_api import router as chat_router
 
 app = FastAPI(
     title="FX Smart Routing Engine",
-    description="Universal Currency Conversion with Treasury Management, Customer Tiers, and Multi-Rail Routing",
-    version="2.0.0"
+    description="Multi-rail FX routing with CBDC, Stablecoin support and Treasury Deals",
+    version="2.1.0"
 )
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include routers
 app.include_router(routing_router)
 app.include_router(multi_rail_router)
+app.include_router(deals_router)
+app.include_router(chat_router)
 
 @app.get("/")
-def root():
+async def root():
     return {
         "service": "FX Smart Routing Engine",
-        "version": "2.0.0",
-        "status": "running",
+        "version": "2.1.0",
         "features": [
             "Treasury rate management",
             "Customer tier pricing",
-            "7 FX providers",
-            "4 routing objectives",
-            "9 conversion types",
-            "CBDC support",
-            "Stablecoin support",
-            "mBridge routing",
-            "Atomic swaps"
-        ],
-        "docs": "/docs"
+            "Multi-provider routing",
+            "CBDC support (6 currencies)",
+            "Stablecoin support (5 coins)",
+            "mBridge cross-border",
+            "Treasury deals with approval workflow",
+            "Chat assistant"
+        ]
     }
 
 @app.get("/api/v1/fx/health")
-def health():
-    return {"status": "healthy", "version": "2.0.0"}
+async def health():
+    return {"status": "healthy", "version": "2.1.0"}
