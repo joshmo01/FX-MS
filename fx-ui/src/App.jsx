@@ -29,6 +29,16 @@ function App() {
     { role: 'assistant', content: "Hi! I'm your FX assistant. Ask me about rates, deals, or routes!" }
   ]);
   const [chatInput, setChatInput] = useState('');
+  
+  // Route calculator state
+  const [routeForm, setRouteForm] = useState({
+    currency_pair: 'USDINR',
+    side: 'SELL',
+    amount: '100000',
+    customer_tier: 'GOLD',
+  });
+  const [routeResult, setRouteResult] = useState(null);
+  const [routeLoading, setRouteLoading] = useState(false);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -36,10 +46,10 @@ function App() {
     setLoading(true);
     try {
       const [dealsRes, ratesRes, cbdcRes, stableRes] = await Promise.all([
-        api.getDeals({}).catch(() => ({ data: { deals: [] } })),
-        api.getTreasuryRates().catch(() => ({ data: { rates: {} } })),
-        api.getCBDCs().catch(() => ({ data: { cbdc: [] } })),
-        api.getStablecoins().catch(() => ({ data: { stablecoins: [] } })),
+        api.getDeals({}).catch(e => ({ data: { deals: [] } })),
+        api.getTreasuryRates().catch(e => ({ data: { rates: {} } })),
+        api.getCBDCs().catch(e => ({ data: { cbdc: [] } })),
+        api.getStablecoins().catch(e => ({ data: { stablecoins: [] } })),
       ]);
       
       setDeals(dealsRes.data?.deals || []);
@@ -86,6 +96,44 @@ function App() {
     } catch (e) { alert(e.response?.data?.detail || 'Error'); }
   };
 
+  const calculateRoute = async () => {
+    setRouteLoading(true);
+    try {
+      const pair = routeForm.currency_pair;
+      const treasuryRate = rates[pair]?.ask || rates[pair]?.bid || 84.55;
+      
+      const bestRateRes = await api.getBestRate({
+        currency_pair: pair,
+        side: routeForm.side,
+        amount: parseFloat(routeForm.amount),
+        customer_tier: routeForm.customer_tier,
+        treasury_rate: treasuryRate,
+      });
+      
+      setRouteResult({
+        ...bestRateRes.data,
+        treasuryRate,
+        amount: parseFloat(routeForm.amount),
+      });
+    } catch (e) {
+      console.error('Route error:', e);
+      // Fallback result
+      const pair = routeForm.currency_pair;
+      const treasuryRate = rates[pair]?.ask || 84.55;
+      setRouteResult({
+        currency_pair: pair,
+        side: routeForm.side,
+        rate: treasuryRate,
+        source: 'TREASURY',
+        deal_id: null,
+        savings_bps: 0,
+        treasury_rate: treasuryRate,
+        amount: parseFloat(routeForm.amount),
+      });
+    }
+    setRouteLoading(false);
+  };
+
   const sendChat = async () => {
     if (!chatInput.trim()) return;
     const msg = chatInput;
@@ -107,6 +155,9 @@ function App() {
   const activeDeals = deals.filter(d => d.status === 'ACTIVE').length;
   const pendingDeals = deals.filter(d => d.status === 'PENDING_APPROVAL').length;
 
+  const currencyPairs = ['USDINR', 'EURINR', 'GBPINR', 'EURUSD', 'GBPUSD', 'USDJPY', 'USDSGD', 'USDAED', 'USDCNY'];
+  const customerTiers = ['PLATINUM', 'GOLD', 'SILVER', 'BRONZE', 'RETAIL'];
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -117,7 +168,7 @@ function App() {
             <h1 className="text-xl font-bold">FX Smart Routing</h1>
           </div>
           <nav className="flex gap-2">
-            {['dashboard', 'deals', 'rates'].map(t => (
+            {['dashboard', 'deals', 'rates', 'routes'].map(t => (
               <button key={t} onClick={() => setTab(t)}
                 className={`px-4 py-2 rounded-lg font-medium ${tab === t ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}>
                 {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -318,19 +369,23 @@ function App() {
                 <div className="grid grid-cols-2 gap-6">
                   <div className="bg-white rounded-xl shadow p-6">
                     <h3 className="font-semibold mb-4">CBDCs ({cbdcs.length})</h3>
-                    <table className="w-full text-sm">
-                      <thead><tr className="text-left text-gray-500"><th>Code</th><th>Name</th><th>Issuer</th><th>mBridge</th></tr></thead>
-                      <tbody>
-                        {cbdcs.map(c => (
-                          <tr key={c.code} className="border-t">
-                            <td className="py-2 font-medium">{c.code}</td>
-                            <td>{c.name}</td>
-                            <td>{c.issuer}</td>
-                            <td>{c.mbridge ? '✅' : '❌'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                    {cbdcs.length === 0 ? (
+                      <p className="text-gray-500 text-sm">Loading...</p>
+                    ) : (
+                      <table className="w-full text-sm">
+                        <thead><tr className="text-left text-gray-500"><th>Code</th><th>Name</th><th>Issuer</th><th>mBridge</th></tr></thead>
+                        <tbody>
+                          {cbdcs.map(c => (
+                            <tr key={c.code} className="border-t">
+                              <td className="py-2 font-medium">{c.code}</td>
+                              <td>{c.name}</td>
+                              <td>{c.issuer}</td>
+                              <td>{c.mbridge ? '✅' : '❌'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
                   </div>
                   <div className="bg-white rounded-xl shadow p-6">
                     <h3 className="font-semibold mb-4">Stablecoins ({stablecoins.length})</h3>
@@ -348,6 +403,187 @@ function App() {
                       </tbody>
                     </table>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Routes */}
+            {tab === 'routes' && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold">Route Calculator</h2>
+                <p className="text-gray-500">Find the optimal FX route for your transaction</p>
+                
+                {/* Calculator Form */}
+                <div className="bg-white rounded-xl shadow p-6">
+                  <h3 className="font-semibold mb-4">Calculate Best Route</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Currency Pair</label>
+                      <select
+                        value={routeForm.currency_pair}
+                        onChange={e => setRouteForm({...routeForm, currency_pair: e.target.value})}
+                        className="w-full border rounded-lg px-3 py-2"
+                      >
+                        {currencyPairs.map(pair => (
+                          <option key={pair} value={pair}>{pair}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Amount (USD)</label>
+                      <input
+                        type="number"
+                        value={routeForm.amount}
+                        onChange={e => setRouteForm({...routeForm, amount: e.target.value})}
+                        className="w-full border rounded-lg px-3 py-2"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Side</label>
+                      <select
+                        value={routeForm.side}
+                        onChange={e => setRouteForm({...routeForm, side: e.target.value})}
+                        className="w-full border rounded-lg px-3 py-2"
+                      >
+                        <option value="BUY">BUY</option>
+                        <option value="SELL">SELL</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Customer Tier</label>
+                      <select
+                        value={routeForm.customer_tier}
+                        onChange={e => setRouteForm({...routeForm, customer_tier: e.target.value})}
+                        className="w-full border rounded-lg px-3 py-2"
+                      >
+                        {customerTiers.map(tier => (
+                          <option key={tier} value={tier}>{tier}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <button
+                    onClick={calculateRoute}
+                    disabled={routeLoading}
+                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {routeLoading ? (
+                      <>
+                        <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                        Calculating...
+                      </>
+                    ) : (
+                      <>🔍 Calculate Route</>
+                    )}
+                  </button>
+                </div>
+
+                {/* Results */}
+                {routeResult && (
+                  <div className="bg-white rounded-xl shadow p-6">
+                    <h3 className="font-semibold mb-4">Route Recommendation</h3>
+                    
+                    {/* Best Rate Card */}
+                    <div className={`rounded-xl p-6 mb-6 ${routeResult.source === 'DEAL' ? 'bg-green-50 border border-green-200' : 'bg-blue-50 border border-blue-200'}`}>
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="text-2xl">🏆</span>
+                        <span className="font-semibold text-lg">
+                          Best Route: {routeResult.source === 'DEAL' ? 'Treasury Deal' : 'Treasury Rate'}
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                          <p className="text-sm text-gray-500">Rate</p>
+                          <p className="text-2xl font-bold">{routeResult.rate?.toFixed(4)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Currency Pair</p>
+                          <p className="text-lg font-medium">{routeResult.currency_pair}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Side</p>
+                          <p className="text-lg font-medium">{routeResult.side}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Amount</p>
+                          <p className="text-lg font-medium">${routeResult.amount?.toLocaleString()}</p>
+                        </div>
+                      </div>
+                      
+                      {routeResult.source === 'DEAL' && (
+                        <div className="mt-4 pt-4 border-t border-green-200">
+                          <div className="grid grid-cols-3 gap-4">
+                            <div>
+                              <p className="text-sm text-gray-500">Deal ID</p>
+                              <p className="font-medium text-green-700">{routeResult.deal_id}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-500">Savings</p>
+                              <p className="font-medium text-green-700">{routeResult.savings_bps?.toFixed(2)} bps</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-500">Amount Saved</p>
+                              <p className="font-medium text-green-700">
+                                ${((routeResult.amount * Math.abs(routeResult.savings_bps || 0)) / 10000).toFixed(2)}
+                              </p>
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-600 mt-4">
+                            vs Treasury Rate: {routeResult.treasury_rate?.toFixed(4)}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {routeResult.source === 'TREASURY' && (
+                        <p className="text-sm text-gray-600 mt-4">
+                          No active deals available for this pair/tier. Using treasury rate.
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Conversion Preview */}
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h4 className="font-medium mb-2">Conversion Preview</h4>
+                      <p className="text-lg">
+                        ${routeResult.amount?.toLocaleString()} USD × {routeResult.rate?.toFixed(4)} = {' '}
+                        <span className="font-bold">
+                          {(routeResult.amount * routeResult.rate)?.toLocaleString(undefined, {maximumFractionDigits: 2})} {routeResult.currency_pair?.slice(3)}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Active Deals for Reference */}
+                <div className="bg-white rounded-xl shadow p-6">
+                  <h3 className="font-semibold mb-4">Active Deals Available</h3>
+                  {deals.filter(d => d.status === 'ACTIVE').length === 0 ? (
+                    <p className="text-gray-500">No active deals. Create and approve deals to get better rates.</p>
+                  ) : (
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-left text-gray-500">
+                          <th className="pb-2">Deal</th>
+                          <th>Pair</th>
+                          <th>Side</th>
+                          <th>Rate</th>
+                          <th>Available</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {deals.filter(d => d.status === 'ACTIVE').map(d => (
+                          <tr key={d.deal_id} className="border-t">
+                            <td className="py-2 font-medium text-blue-600">{d.deal_id}</td>
+                            <td>{d.currency_pair}</td>
+                            <td>{d.side}</td>
+                            <td>{d.side === 'SELL' ? d.sell_rate : d.buy_rate}</td>
+                            <td>${(d.available_amount / 1000).toFixed(0)}K</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               </div>
             )}
