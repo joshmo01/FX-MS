@@ -29,7 +29,7 @@ function App() {
     { role: 'assistant', content: "Hi! I'm your FX assistant. Ask me about rates, deals, or routes!" }
   ]);
   const [chatInput, setChatInput] = useState('');
-  
+
   // Route calculator state
   const [routeForm, setRouteForm] = useState({
     currency_pair: 'USDINR',
@@ -40,24 +40,43 @@ function App() {
   const [routeResult, setRouteResult] = useState(null);
   const [routeLoading, setRouteLoading] = useState(false);
 
+  // Pricing state
+  const [pricingForm, setPricingForm] = useState({
+    source_currency: 'USD',
+    target_currency: 'INR',
+    amount: '100000',
+    segment: 'MID_MARKET',
+    direction: 'SELL',
+    customer_id: 'CUST-001',
+  });
+  const [pricingResult, setPricingResult] = useState(null);
+  const [pricingLoading, setPricingLoading] = useState(false);
+  const [pricingError, setPricingError] = useState(null);
+  const [segments, setSegments] = useState([]);
+  const [tiers, setTiers] = useState([]);
+
   useEffect(() => { fetchData(); }, []);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [dealsRes, ratesRes, cbdcRes, stableRes] = await Promise.all([
+      const [dealsRes, ratesRes, cbdcRes, stableRes, segmentsRes, tiersRes] = await Promise.all([
         api.getDeals({}).catch(e => ({ data: { deals: [] } })),
         api.getTreasuryRates().catch(e => ({ data: { rates: {} } })),
         api.getCBDCs().catch(e => ({ data: { cbdc: [] } })),
         api.getStablecoins().catch(e => ({ data: { stablecoins: [] } })),
+        fetch('http://127.0.0.1:8000/api/v1/fx/pricing/segments').then(r => r.json()).catch(e => []),
+        fetch('http://127.0.0.1:8000/api/v1/fx/pricing/tiers').then(r => r.json()).catch(e => []),
       ]);
-      
+
       setDeals(dealsRes.data?.deals || []);
       setRates(ratesRes.data?.rates || {});
       setCbdcs(cbdcRes.data?.cbdc || []);
       setStablecoins(stableRes.data?.stablecoins || []);
-    } catch (e) { 
-      console.error('Fetch error:', e); 
+      setSegments(segmentsRes || []);
+      setTiers(tiersRes || []);
+    } catch (e) {
+      console.error('Fetch error:', e);
     }
     setLoading(false);
   };
@@ -101,7 +120,7 @@ function App() {
     try {
       const pair = routeForm.currency_pair;
       const treasuryRate = rates[pair]?.ask || rates[pair]?.bid || 84.55;
-      
+
       const bestRateRes = await api.getBestRate({
         currency_pair: pair,
         side: routeForm.side,
@@ -109,7 +128,7 @@ function App() {
         customer_tier: routeForm.customer_tier,
         treasury_rate: treasuryRate,
       });
-      
+
       setRouteResult({
         ...bestRateRes.data,
         treasuryRate,
@@ -117,7 +136,6 @@ function App() {
       });
     } catch (e) {
       console.error('Route error:', e);
-      // Fallback result
       const pair = routeForm.currency_pair;
       const treasuryRate = rates[pair]?.ask || 84.55;
       setRouteResult({
@@ -132,6 +150,36 @@ function App() {
       });
     }
     setRouteLoading(false);
+  };
+
+  const calculatePricing = async () => {
+    setPricingLoading(true);
+    setPricingError(null);
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/v1/fx/pricing/quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          source_currency: pricingForm.source_currency,
+          target_currency: pricingForm.target_currency,
+          amount: parseFloat(pricingForm.amount),
+          customer_id: pricingForm.customer_id,
+          segment: pricingForm.segment,
+          direction: pricingForm.direction,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setPricingResult(data);
+    } catch (e) {
+      console.error('Pricing error:', e);
+      setPricingError(e.message);
+    }
+    setPricingLoading(false);
   };
 
   const sendChat = async () => {
@@ -157,6 +205,16 @@ function App() {
 
   const currencyPairs = ['USDINR', 'EURINR', 'GBPINR', 'EURUSD', 'GBPUSD', 'USDJPY', 'USDSGD', 'USDAED', 'USDCNY'];
   const customerTiers = ['PLATINUM', 'GOLD', 'SILVER', 'BRONZE', 'RETAIL'];
+  const currencies = ['USD', 'EUR', 'GBP', 'INR', 'JPY', 'AED', 'SGD', 'AUD', 'CAD', 'CHF'];
+  const customerSegments = ['RETAIL', 'SMALL_BUSINESS', 'MID_MARKET', 'LARGE_CORPORATE', 'PRIVATE_BANKING', 'INSTITUTIONAL'];
+
+  const swapCurrencies = () => {
+    setPricingForm({
+      ...pricingForm,
+      source_currency: pricingForm.target_currency,
+      target_currency: pricingForm.source_currency,
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -168,7 +226,7 @@ function App() {
             <h1 className="text-xl font-bold">FX Smart Routing</h1>
           </div>
           <nav className="flex gap-2">
-            {['dashboard', 'deals', 'rates', 'routes'].map(t => (
+            {['dashboard', 'deals', 'rates', 'routes', 'pricing'].map(t => (
               <button key={t} onClick={() => setTab(t)}
                 className={`px-4 py-2 rounded-lg font-medium ${tab === t ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}>
                 {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -203,8 +261,8 @@ function App() {
                     <p className="text-3xl font-bold">{Object.keys(rates).length}</p>
                   </div>
                   <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-6 rounded-xl text-white">
-                    <p className="text-sm opacity-80">CBDCs</p>
-                    <p className="text-3xl font-bold">{cbdcs.length}</p>
+                    <p className="text-sm opacity-80">Segments</p>
+                    <p className="text-3xl font-bold">{segments.length}</p>
                   </div>
                 </div>
 
@@ -252,7 +310,7 @@ function App() {
                   <h2 className="text-2xl font-bold">Deals Management</h2>
                   <button onClick={() => setShowCreate(true)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Create Deal</button>
                 </div>
-                
+
                 <div className="bg-white rounded-xl shadow overflow-hidden">
                   <table className="w-full">
                     <thead className="bg-gray-50">
@@ -347,7 +405,7 @@ function App() {
             {tab === 'rates' && (
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold">FX Rates</h2>
-                
+
                 <div className="bg-white rounded-xl shadow p-6">
                   <h3 className="font-semibold mb-4">Treasury Rates</h3>
                   <table className="w-full">
@@ -412,178 +470,286 @@ function App() {
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold">Route Calculator</h2>
                 <p className="text-gray-500">Find the optimal FX route for your transaction</p>
-                
-                {/* Calculator Form */}
+
                 <div className="bg-white rounded-xl shadow p-6">
                   <h3 className="font-semibold mb-4">Calculate Best Route</h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Currency Pair</label>
-                      <select
-                        value={routeForm.currency_pair}
-                        onChange={e => setRouteForm({...routeForm, currency_pair: e.target.value})}
-                        className="w-full border rounded-lg px-3 py-2"
-                      >
-                        {currencyPairs.map(pair => (
-                          <option key={pair} value={pair}>{pair}</option>
-                        ))}
+                      <select value={routeForm.currency_pair} onChange={e => setRouteForm({...routeForm, currency_pair: e.target.value})} className="w-full border rounded-lg px-3 py-2">
+                        {currencyPairs.map(pair => (<option key={pair} value={pair}>{pair}</option>))}
                       </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Amount (USD)</label>
-                      <input
-                        type="number"
-                        value={routeForm.amount}
-                        onChange={e => setRouteForm({...routeForm, amount: e.target.value})}
-                        className="w-full border rounded-lg px-3 py-2"
-                      />
+                      <input type="number" value={routeForm.amount} onChange={e => setRouteForm({...routeForm, amount: e.target.value})} className="w-full border rounded-lg px-3 py-2" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Side</label>
-                      <select
-                        value={routeForm.side}
-                        onChange={e => setRouteForm({...routeForm, side: e.target.value})}
-                        className="w-full border rounded-lg px-3 py-2"
-                      >
+                      <select value={routeForm.side} onChange={e => setRouteForm({...routeForm, side: e.target.value})} className="w-full border rounded-lg px-3 py-2">
                         <option value="BUY">BUY</option>
                         <option value="SELL">SELL</option>
                       </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Customer Tier</label>
-                      <select
-                        value={routeForm.customer_tier}
-                        onChange={e => setRouteForm({...routeForm, customer_tier: e.target.value})}
-                        className="w-full border rounded-lg px-3 py-2"
-                      >
-                        {customerTiers.map(tier => (
-                          <option key={tier} value={tier}>{tier}</option>
-                        ))}
+                      <select value={routeForm.customer_tier} onChange={e => setRouteForm({...routeForm, customer_tier: e.target.value})} className="w-full border rounded-lg px-3 py-2">
+                        {customerTiers.map(tier => (<option key={tier} value={tier}>{tier}</option>))}
                       </select>
                     </div>
                   </div>
-                  <button
-                    onClick={calculateRoute}
-                    disabled={routeLoading}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
-                  >
-                    {routeLoading ? (
-                      <>
-                        <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-                        Calculating...
-                      </>
-                    ) : (
-                      <>🔍 Calculate Route</>
-                    )}
+                  <button onClick={calculateRoute} disabled={routeLoading} className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2">
+                    {routeLoading ? (<><div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>Calculating...</>) : (<>🔍 Calculate Route</>)}
                   </button>
                 </div>
 
-                {/* Results */}
                 {routeResult && (
                   <div className="bg-white rounded-xl shadow p-6">
                     <h3 className="font-semibold mb-4">Route Recommendation</h3>
-                    
-                    {/* Best Rate Card */}
                     <div className={`rounded-xl p-6 mb-6 ${routeResult.source === 'DEAL' ? 'bg-green-50 border border-green-200' : 'bg-blue-50 border border-blue-200'}`}>
                       <div className="flex items-center gap-2 mb-4">
                         <span className="text-2xl">🏆</span>
-                        <span className="font-semibold text-lg">
-                          Best Route: {routeResult.source === 'DEAL' ? 'Treasury Deal' : 'Treasury Rate'}
-                        </span>
+                        <span className="font-semibold text-lg">Best Route: {routeResult.source === 'DEAL' ? 'Treasury Deal' : 'Treasury Rate'}</span>
                       </div>
-                      
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div>
-                          <p className="text-sm text-gray-500">Rate</p>
-                          <p className="text-2xl font-bold">{routeResult.rate?.toFixed(4)}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Currency Pair</p>
-                          <p className="text-lg font-medium">{routeResult.currency_pair}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Side</p>
-                          <p className="text-lg font-medium">{routeResult.side}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Amount</p>
-                          <p className="text-lg font-medium">${routeResult.amount?.toLocaleString()}</p>
-                        </div>
+                        <div><p className="text-sm text-gray-500">Rate</p><p className="text-2xl font-bold">{routeResult.rate?.toFixed(4)}</p></div>
+                        <div><p className="text-sm text-gray-500">Currency Pair</p><p className="text-lg font-medium">{routeResult.currency_pair}</p></div>
+                        <div><p className="text-sm text-gray-500">Side</p><p className="text-lg font-medium">{routeResult.side}</p></div>
+                        <div><p className="text-sm text-gray-500">Amount</p><p className="text-lg font-medium">${routeResult.amount?.toLocaleString()}</p></div>
                       </div>
-                      
-                      {routeResult.source === 'DEAL' && (
-                        <div className="mt-4 pt-4 border-t border-green-200">
-                          <div className="grid grid-cols-3 gap-4">
-                            <div>
-                              <p className="text-sm text-gray-500">Deal ID</p>
-                              <p className="font-medium text-green-700">{routeResult.deal_id}</p>
-                            </div>
-                            <div>
-                              <p className="text-sm text-gray-500">Savings</p>
-                              <p className="font-medium text-green-700">{routeResult.savings_bps?.toFixed(2)} bps</p>
-                            </div>
-                            <div>
-                              <p className="text-sm text-gray-500">Amount Saved</p>
-                              <p className="font-medium text-green-700">
-                                ${((routeResult.amount * Math.abs(routeResult.savings_bps || 0)) / 10000).toFixed(2)}
-                              </p>
-                            </div>
-                          </div>
-                          <p className="text-sm text-gray-600 mt-4">
-                            vs Treasury Rate: {routeResult.treasury_rate?.toFixed(4)}
-                          </p>
-                        </div>
-                      )}
-                      
-                      {routeResult.source === 'TREASURY' && (
-                        <p className="text-sm text-gray-600 mt-4">
-                          No active deals available for this pair/tier. Using treasury rate.
-                        </p>
-                      )}
                     </div>
-
-                    {/* Conversion Preview */}
                     <div className="bg-gray-50 rounded-lg p-4">
                       <h4 className="font-medium mb-2">Conversion Preview</h4>
-                      <p className="text-lg">
-                        ${routeResult.amount?.toLocaleString()} USD × {routeResult.rate?.toFixed(4)} = {' '}
-                        <span className="font-bold">
-                          {(routeResult.amount * routeResult.rate)?.toLocaleString(undefined, {maximumFractionDigits: 2})} {routeResult.currency_pair?.slice(3)}
-                        </span>
-                      </p>
+                      <p className="text-lg">${routeResult.amount?.toLocaleString()} USD × {routeResult.rate?.toFixed(4)} = <span className="font-bold">{(routeResult.amount * routeResult.rate)?.toLocaleString(undefined, {maximumFractionDigits: 2})} {routeResult.currency_pair?.slice(3)}</span></p>
                     </div>
                   </div>
                 )}
+              </div>
+            )}
 
-                {/* Active Deals for Reference */}
-                <div className="bg-white rounded-xl shadow p-6">
-                  <h3 className="font-semibold mb-4">Active Deals Available</h3>
-                  {deals.filter(d => d.status === 'ACTIVE').length === 0 ? (
-                    <p className="text-gray-500">No active deals. Create and approve deals to get better rates.</p>
-                  ) : (
+            {/* Pricing - NEW TAB */}
+            {tab === 'pricing' && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold">FX Pricing Service</h2>
+                <p className="text-gray-500">Get customer-specific pricing with segmentation and volume tiers</p>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Quote Form */}
+                  <div className="lg:col-span-1">
+                    <div className="bg-white rounded-xl shadow p-6">
+                      <h3 className="font-semibold mb-4">💰 Get Quote</h3>
+                      
+                      {pricingError && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+                          {pricingError}
+                        </div>
+                      )}
+
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-5 gap-2 items-end">
+                          <div className="col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">From</label>
+                            <select value={pricingForm.source_currency} onChange={e => setPricingForm({...pricingForm, source_currency: e.target.value})} className="w-full border rounded-lg px-3 py-2">
+                              {currencies.map(c => (<option key={c} value={c}>{c}</option>))}
+                            </select>
+                          </div>
+                          <div className="flex justify-center">
+                            <button onClick={swapCurrencies} className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200">⇄</button>
+                          </div>
+                          <div className="col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">To</label>
+                            <select value={pricingForm.target_currency} onChange={e => setPricingForm({...pricingForm, target_currency: e.target.value})} className="w-full border rounded-lg px-3 py-2">
+                              {currencies.map(c => (<option key={c} value={c}>{c}</option>))}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                          <input type="number" value={pricingForm.amount} onChange={e => setPricingForm({...pricingForm, amount: e.target.value})} className="w-full border rounded-lg px-3 py-2" />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Customer Segment</label>
+                          <select value={pricingForm.segment} onChange={e => setPricingForm({...pricingForm, segment: e.target.value})} className="w-full border rounded-lg px-3 py-2">
+                            {customerSegments.map(s => (<option key={s} value={s}>{s.replace('_', ' ')}</option>))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Direction</label>
+                          <select value={pricingForm.direction} onChange={e => setPricingForm({...pricingForm, direction: e.target.value})} className="w-full border rounded-lg px-3 py-2">
+                            <option value="SELL">SELL (Convert from source)</option>
+                            <option value="BUY">BUY (Acquire source)</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Customer ID</label>
+                          <input type="text" value={pricingForm.customer_id} onChange={e => setPricingForm({...pricingForm, customer_id: e.target.value})} className="w-full border rounded-lg px-3 py-2" />
+                        </div>
+
+                        <button onClick={calculatePricing} disabled={pricingLoading} className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 flex items-center justify-center gap-2 font-medium">
+                          {pricingLoading ? (<><div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>Getting Quote...</>) : (<>Get Quote</>)}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quote Result */}
+                  <div className="lg:col-span-2">
+                    {pricingResult ? (
+                      <div className="bg-white rounded-xl shadow p-6">
+                        <div className="flex justify-between items-start mb-6">
+                          <div>
+                            <h3 className="font-semibold text-lg">Quote Result</h3>
+                            <p className="text-sm text-gray-500 font-mono">{pricingResult.quote_id}</p>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-sm text-green-600">Valid until</span>
+                            <p className="text-sm font-medium">{new Date(pricingResult.valid_until).toLocaleTimeString()}</p>
+                          </div>
+                        </div>
+
+                        {/* Rate Display */}
+                        <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-white text-center mb-6">
+                          <p className="text-sm opacity-80 mb-1">Customer Rate</p>
+                          <p className="text-4xl font-bold">{pricingResult.customer_rate?.toFixed(4)}</p>
+                          <p className="text-sm opacity-80 mt-2">{pricingResult.source_currency}/{pricingResult.target_currency}</p>
+                        </div>
+
+                        {/* Conversion */}
+                        <div className="grid grid-cols-3 gap-4 mb-6">
+                          <div className="bg-gray-50 rounded-lg p-4 text-center">
+                            <p className="text-sm text-gray-500">You Send</p>
+                            <p className="text-xl font-bold">{parseFloat(pricingResult.source_amount).toLocaleString()}</p>
+                            <p className="text-sm text-gray-500">{pricingResult.source_currency}</p>
+                          </div>
+                          <div className="flex items-center justify-center text-2xl text-gray-400">→</div>
+                          <div className="bg-gray-50 rounded-lg p-4 text-center">
+                            <p className="text-sm text-gray-500">You Receive</p>
+                            <p className="text-xl font-bold">{parseFloat(pricingResult.target_amount).toLocaleString()}</p>
+                            <p className="text-sm text-gray-500">{pricingResult.target_currency}</p>
+                          </div>
+                        </div>
+
+                        {/* Info Badges */}
+                        <div className="grid grid-cols-3 gap-4 mb-6">
+                          <div className="bg-blue-50 rounded-lg p-3 text-center">
+                            <p className="text-xs text-blue-600 uppercase">Segment</p>
+                            <p className="font-medium text-blue-800">{pricingResult.segment?.replace('_', ' ')}</p>
+                          </div>
+                          <div className="bg-purple-50 rounded-lg p-3 text-center">
+                            <p className="text-xs text-purple-600 uppercase">Amount Tier</p>
+                            <p className="font-medium text-purple-800">{pricingResult.amount_tier}</p>
+                          </div>
+                          <div className="bg-orange-50 rounded-lg p-3 text-center">
+                            <p className="text-xs text-orange-600 uppercase">Currency Type</p>
+                            <p className="font-medium text-orange-800">{pricingResult.currency_category}</p>
+                          </div>
+                        </div>
+
+                        {/* Margin Breakdown */}
+                        <div className="border-t pt-4">
+                          <h4 className="font-medium mb-3">💹 Margin Breakdown</h4>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between"><span className="text-gray-500">Mid-Market Rate</span><span className="font-mono">{pricingResult.mid_rate?.toFixed(4)}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Segment Base</span><span className="font-mono text-red-600">+{pricingResult.margin_breakdown?.segment_base_bps} bps</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Tier Adjustment</span><span className={`font-mono ${pricingResult.margin_breakdown?.tier_adjustment_bps < 0 ? 'text-green-600' : 'text-red-600'}`}>{pricingResult.margin_breakdown?.tier_adjustment_bps >= 0 ? '+' : ''}{pricingResult.margin_breakdown?.tier_adjustment_bps} bps</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Currency Factor</span><span className="font-mono text-red-600">+{pricingResult.margin_breakdown?.currency_factor_bps} bps</span></div>
+                            <div className="flex justify-between font-medium border-t pt-2 mt-2"><span>Total Margin</span><span className="text-green-600">{pricingResult.margin_bps} bps ({pricingResult.margin_percent?.toFixed(2)}%)</span></div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-white rounded-xl shadow p-6 flex items-center justify-center h-full min-h-[400px]">
+                        <div className="text-center text-gray-400">
+                          <p className="text-4xl mb-4">💱</p>
+                          <p>Enter details and click "Get Quote" to see pricing</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Reference Tables */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Segments Table */}
+                  <div className="bg-white rounded-xl shadow p-6">
+                    <h3 className="font-semibold mb-4">📊 Customer Segments</h3>
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="text-left text-gray-500">
-                          <th className="pb-2">Deal</th>
-                          <th>Pair</th>
-                          <th>Side</th>
-                          <th>Rate</th>
-                          <th>Available</th>
+                        <tr className="text-left text-xs text-gray-500 uppercase">
+                          <th className="pb-3">Segment</th>
+                          <th>Base</th>
+                          <th>Range</th>
+                          <th>Vol. Disc.</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {deals.filter(d => d.status === 'ACTIVE').map(d => (
-                          <tr key={d.deal_id} className="border-t">
-                            <td className="py-2 font-medium text-blue-600">{d.deal_id}</td>
-                            <td>{d.currency_pair}</td>
-                            <td>{d.side}</td>
-                            <td>{d.side === 'SELL' ? d.sell_rate : d.buy_rate}</td>
-                            <td>${(d.available_amount / 1000).toFixed(0)}K</td>
+                        {segments.map(s => (
+                          <tr key={s.segment_id} className="border-t">
+                            <td className="py-2 font-medium">{s.segment_name}</td>
+                            <td>{s.base_margin_bps} bps</td>
+                            <td>{s.min_margin_bps}-{s.max_margin_bps} bps</td>
+                            <td>{s.volume_discount_eligible ? '✅' : '❌'}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
-                  )}
+                  </div>
+
+                  {/* Tiers Table */}
+                  <div className="bg-white rounded-xl shadow p-6">
+                    <h3 className="font-semibold mb-4">📈 Amount Tiers</h3>
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-left text-xs text-gray-500 uppercase">
+                          <th className="pb-3">Tier</th>
+                          <th>Amount Range</th>
+                          <th>Adjustment</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {tiers.map(t => (
+                          <tr key={t.tier_id} className="border-t">
+                            <td className="py-2 font-medium">{t.tier_id}</td>
+                            <td>${t.min_amount?.toLocaleString()} - {t.max_amount ? '$' + t.max_amount.toLocaleString() : '∞'}</td>
+                            <td className={t.adjustment_bps < 0 ? 'text-green-600' : t.adjustment_bps > 0 ? 'text-red-600' : ''}>
+                              {t.adjustment_bps > 0 ? '+' : ''}{t.adjustment_bps} bps
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Currency Categories */}
+                <div className="bg-white rounded-xl shadow p-6">
+                  <h3 className="font-semibold mb-4">🌍 Currency Categories</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <h4 className="font-medium text-green-800 mb-2">G10 (Most Liquid)</h4>
+                      <p className="text-sm text-green-600 mb-2">USD, EUR, JPY, GBP, CHF, AUD, NZD, CAD</p>
+                      <p className="text-xs text-green-700">Retail: 50 bps | Corp: 15 bps | Inst: 2 bps</p>
+                    </div>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <h4 className="font-medium text-blue-800 mb-2">Minor</h4>
+                      <p className="text-sm text-blue-600 mb-2">SGD, HKD, DKK, PLN, CZK</p>
+                      <p className="text-xs text-blue-700">Retail: 100 bps | Corp: 30 bps | Inst: 5 bps</p>
+                    </div>
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <h4 className="font-medium text-yellow-800 mb-2">Exotic</h4>
+                      <p className="text-sm text-yellow-600 mb-2">TRY, ZAR, MXN, BRL</p>
+                      <p className="text-xs text-yellow-700">Retail: 200 bps | Corp: 75 bps | Inst: 15 bps</p>
+                    </div>
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <h4 className="font-medium text-red-800 mb-2">Restricted</h4>
+                      <p className="text-sm text-red-600 mb-2">INR, CNY, KRW, TWD, PHP</p>
+                      <p className="text-xs text-red-700">Retail: 300 bps | Corp: 100 bps | Inst: 25 bps</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
