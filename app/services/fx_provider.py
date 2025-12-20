@@ -207,18 +207,31 @@ class MockFXProvider(FXRateProvider):
     def __init__(self):
         # Sample rates (as of late 2024 - for development only)
         self._base_rates: Dict[str, Decimal] = {
-            "USDINR": Decimal("84.50"),
-            "EURINR": Decimal("89.20"),
-            "GBPINR": Decimal("106.50"),
-            "EURUSD": Decimal("1.0557"),
-            "GBPUSD": Decimal("1.2604"),
-            "USDJPY": Decimal("154.80"),
-            "AEDINR": Decimal("23.01"),
-            "SGDINR": Decimal("62.85"),
-            "AUDINR": Decimal("54.20"),
-            "CADINR": Decimal("59.80"),
-            "CHFINR": Decimal("94.50"),
-        }
+    # Existing rates
+    "USDINR": Decimal("84.50"),
+    "EURINR": Decimal("89.20"),
+    "GBPINR": Decimal("106.50"),
+    "EURUSD": Decimal("1.0557"),
+    "GBPUSD": Decimal("1.2604"),
+    "USDJPY": Decimal("154.80"),
+    "AEDINR": Decimal("23.01"),
+    "SGDINR": Decimal("62.85"),
+    "AUDINR": Decimal("54.20"),
+    "CADINR": Decimal("59.80"),
+    "CHFINR": Decimal("94.50"),
+    
+    # ADD THESE NEW RATES
+    "USDCHF": Decimal("0.8950"),
+    "EURCHF": Decimal("0.9450"),
+    "GBPCHF": Decimal("1.1280"),
+    "EURGBP": Decimal("0.8375"),
+    "AUDUSD": Decimal("0.6420"),
+    "NZDUSD": Decimal("0.5890"),
+    "USDCAD": Decimal("1.4150"),
+    "USDSGD": Decimal("1.3450"),
+    "USDHKD": Decimal("7.8100"),
+    "USDAED": Decimal("3.6725"),
+}
         
         # Default spreads in basis points
         self._spreads: Dict[str, int] = {

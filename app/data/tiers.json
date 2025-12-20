@@ -1,0 +1,58 @@
+{
+  "tiers": [
+    {
+      "tier_id": "TIER_1",
+      "tier_order": 1,
+      "min_amount": 0,
+      "max_amount": 10000,
+      "margin_adjustment_bps": 50,
+      "currency": "USD",
+      "description": "Small amount premium - operational cost recovery"
+    },
+    {
+      "tier_id": "TIER_2",
+      "tier_order": 2,
+      "min_amount": 10000,
+      "max_amount": 50000,
+      "margin_adjustment_bps": 25,
+      "currency": "USD",
+      "description": "Standard retail tier"
+    },
+    {
+      "tier_id": "TIER_3",
+      "tier_order": 3,
+      "min_amount": 50000,
+      "max_amount": 100000,
+      "margin_adjustment_bps": 0,
+      "currency": "USD",
+      "description": "Base rate tier - no adjustment"
+    },
+    {
+      "tier_id": "TIER_4",
+      "tier_order": 4,
+      "min_amount": 100000,
+      "max_amount": 500000,
+      "margin_adjustment_bps": -15,
+      "currency": "USD",
+      "description": "Volume discount tier"
+    },
+    {
+      "tier_id": "TIER_5",
+      "tier_order": 5,
+      "min_amount": 500000,
+      "max_amount": 1000000,
+      "margin_adjustment_bps": -25,
+      "currency": "USD",
+      "description": "Preferred client tier"
+    },
+    {
+      "tier_id": "TIER_6",
+      "tier_order": 6,
+      "min_amount": 1000000,
+      "max_amount": null,
+      "margin_adjustment_bps": -40,
+      "currency": "USD",
+      "description": "Institutional tier - maximum discount"
+    }
+  ]
+}

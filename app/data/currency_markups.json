@@ -1,0 +1,40 @@
+{
+  "categories": {
+    "G10": {
+      "description": "Most liquid major currencies - tight spreads",
+      "currencies": ["USD", "EUR", "JPY", "GBP", "CHF", "AUD", "NZD", "CAD", "SEK", "NOK"],
+      "retail_markup_bps": 50,
+      "corporate_markup_bps": 15,
+      "institutional_markup_bps": 2
+    },
+    "MINOR": {
+      "description": "Less liquid developed market currencies",
+      "currencies": ["SGD", "HKD", "DKK", "PLN", "CZK", "HUF", "ILS", "RON", "BGN"],
+      "retail_markup_bps": 100,
+      "corporate_markup_bps": 30,
+      "institutional_markup_bps": 5
+    },
+    "EXOTIC": {
+      "description": "Emerging market currencies with higher volatility",
+      "currencies": ["TRY", "ZAR", "MXN", "BRL", "ARS", "RUB", "CLP", "COP", "PEN"],
+      "retail_markup_bps": 200,
+      "corporate_markup_bps": 75,
+      "institutional_markup_bps": 15
+    },
+    "RESTRICTED": {
+      "description": "Capital control currencies requiring special handling",
+      "currencies": ["INR", "CNY", "KRW", "TWD", "PHP", "IDR", "MYR", "THB", "VND", "PKR", "BDT", "LKR", "NPR"],
+      "retail_markup_bps": 300,
+      "corporate_markup_bps": 100,
+      "institutional_markup_bps": 25
+    }
+  },
+  "pair_overrides": {
+    "EURUSD": { "retail_bps": 40, "corporate_bps": 10, "institutional_bps": 1, "note": "Most liquid pair" },
+    "USDJPY": { "retail_bps": 45, "corporate_bps": 12, "institutional_bps": 2, "note": "Second most liquid" },
+    "GBPUSD": { "retail_bps": 50, "corporate_bps": 15, "institutional_bps": 2, "note": "Cable" },
+    "USDCHF": { "retail_bps": 50, "corporate_bps": 15, "institutional_bps": 3, "note": "Swissy" },
+    "USDINR": { "retail_bps": 250, "corporate_bps": 80, "institutional_bps": 20, "note": "NDF market" },
+    "USDCNY": { "retail_bps": 280, "corporate_bps": 90, "institutional_bps": 22, "note": "CNH offshore" }
+  }
+}

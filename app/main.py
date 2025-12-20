@@ -10,9 +10,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from datetime import datetime
 import uuid
-
-from app.core.config import get_settings
+from fastapi.responses import HTMLResponse
+from pathlib import Path
 from app.api.conversion import router as conversion_router
+from app.api.pricing import router as pricing_router  # ADD THIS IMPORT
+from app.core.config import get_settings
 
 # Configure logging
 logging.basicConfig(
@@ -42,7 +44,7 @@ app = FastAPI(
     description="""
 ## FX Currency Conversion Microservice
 
-A high-performance microservice for real-time currency conversion with 
+A high-performance microservice for real-time currency conversion with
 integration to Refinitiv (Reuters) for live exchange rates.
 
 ### Features
@@ -112,6 +114,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 # Include routers
 app.include_router(conversion_router)
+app.include_router(pricing_router)  # ADD THIS LINE HERE
 
 
 # Root endpoint
@@ -125,6 +128,14 @@ async def root():
         "docs": "/docs",
         "health": "/api/v1/fx/health"
     }
+
+@app.get("/ui", response_class=HTMLResponse, include_in_schema=False)
+async def pricing_ui():
+    """Serve the FX Pricing UI"""
+    html_path = Path(__file__).parent / "static" / "index.html"
+    if html_path.exists():
+        return html_path.read_text()
+    return "<h1>UI not found</h1>"
 
 
 # Run with uvicorn when executed directly
