@@ -150,5 +150,19 @@
       "approved_by": "senior_treasury"
     },
     "details": "Deal approved"
+  },
+  {
+    "log_id": "LOG-66BD6259",
+    "deal_id": "DEAL-20251214-0002",
+    "action": "EXPIRED",
+    "actor": "SYSTEM",
+    "timestamp": "2025-12-20T16:42:15.884602",
+    "old_values": {
+      "status": "ACTIVE"
+    },
+    "new_values": {
+      "status": "EXPIRED"
+    },
+    "details": "Deal expired automatically"
   }
 ]
