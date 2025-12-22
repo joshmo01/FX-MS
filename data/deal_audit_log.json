@@ -164,5 +164,114 @@
       "status": "EXPIRED"
     },
     "details": "Deal expired automatically"
+  },
+  {
+    "log_id": "LOG-9D701901",
+    "deal_id": "DEAL-20251222-0001",
+    "action": "CREATED",
+    "actor": "treasury_user",
+    "timestamp": "2025-12-22T13:41:32.467340",
+    "old_values": null,
+    "new_values": {
+      "deal_id": "DEAL-20251222-0001",
+      "currency_pair": "USDINR",
+      "side": "SELL",
+      "buy_rate": 84.4,
+      "sell_rate": 84.55,
+      "spread_bps": 17.76,
+      "amount": 500000.0,
+      "available_amount": 500000.0,
+      "utilized_amount": 0,
+      "valid_from": "2025-12-22T19:10:00",
+      "valid_until": "2025-12-22T22:11:00",
+      "status": "ACTIVE",
+      "customer_tier": null,
+      "min_amount": 1000.0,
+      "max_amount_per_txn": null,
+      "created_by": "treasury_user",
+      "created_at": "2025-12-22T13:41:32.466549",
+      "updated_at": "2025-12-22T14:05:01.851301",
+      "submitted_by": "treasury_user",
+      "submitted_at": "2025-12-22T14:04:59.804204",
+      "approved_by": "senior_treasury",
+      "approved_at": "2025-12-22T14:05:01.851295",
+      "rejected_by": null,
+      "rejected_at": null,
+      "rejection_reason": null,
+      "cancelled_by": null,
+      "cancelled_at": null,
+      "cancellation_reason": null,
+      "notes": null
+    },
+    "details": "Deal created for USDINR"
+  },
+  {
+    "log_id": "LOG-99268735",
+    "deal_id": "DEAL-20251222-0001",
+    "action": "SUBMITTED",
+    "actor": "treasury_user",
+    "timestamp": "2025-12-22T14:04:59.805752",
+    "old_values": {
+      "status": "DRAFT"
+    },
+    "new_values": {
+      "status": "PENDING_APPROVAL"
+    },
+    "details": "Deal submitted for approval"
+  },
+  {
+    "log_id": "LOG-68F637F9",
+    "deal_id": "DEAL-20251222-0001",
+    "action": "APPROVED",
+    "actor": "senior_treasury",
+    "timestamp": "2025-12-22T14:05:01.851648",
+    "old_values": {
+      "status": "PENDING_APPROVAL"
+    },
+    "new_values": {
+      "status": "ACTIVE",
+      "approved_by": "senior_treasury"
+    },
+    "details": "Deal approved"
+  },
+  {
+    "log_id": "LOG-FA3C25F3",
+    "deal_id": "DEAL-20251222-0002",
+    "action": "CREATED",
+    "actor": "treasury_user",
+    "timestamp": "2025-12-22T16:16:36.979315",
+    "old_values": null,
+    "new_values": {
+      "deal_id": "DEAL-20251222-0002",
+      "currency_pair": "USDINR",
+      "side": "SELL",
+      "buy_rate": 83.1077,
+      "sell_rate": 83.2325,
+      "spread_bps": 15.01,
+      "amount": 100000.0,
+      "available_amount": 100000.0,
+      "utilized_amount": 0,
+      "valid_from": "2025-12-22T21:46:00",
+      "valid_until": "2025-12-22T22:46:00",
+      "status": "DRAFT",
+      "customer_tier": null,
+      "min_amount": 1000.0,
+      "max_amount_per_txn": null,
+      "created_by": "treasury_user",
+      "created_at": "2025-12-22T16:16:36.977951",
+      "updated_at": "2025-12-22T16:16:36.977951",
+      "submitted_by": null,
+      "submitted_at": null,
+      "approved_by": null,
+      "approved_at": null,
+      "rejected_by": null,
+      "rejected_at": null,
+      "rejection_reason": null,
+      "cancelled_by": null,
+      "cancelled_at": null,
+      "cancellation_reason": null,
+      "notes": null
+    },
+    "details": "Deal created for USDINR"
   }
 ]
