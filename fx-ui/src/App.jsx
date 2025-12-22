@@ -16,6 +16,24 @@ const StatusBadge = ({ status }) => {
   );
 };
 
+const RailBadge = ({ rail }) => {
+  const colors = {
+    FIAT: 'bg-blue-100 text-blue-800 border-blue-300',
+    CBDC: 'bg-purple-100 text-purple-800 border-purple-300',
+    STABLECOIN: 'bg-green-100 text-green-800 border-green-300',
+  };
+  const icons = {
+    FIAT: '🏦',
+    CBDC: '🏛️',
+    STABLECOIN: '💎',
+  };
+  return (
+    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${colors[rail] || 'bg-gray-100'}`}>
+      {icons[rail]} {rail}
+    </span>
+  );
+};
+
 function App() {
   const [tab, setTab] = useState('dashboard');
   const [deals, setDeals] = useState([]);
@@ -24,20 +42,22 @@ function App() {
   const [stablecoins, setStablecoins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
+  const [showPricingDealCreate, setShowPricingDealCreate] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([
     { role: 'assistant', content: "Hi! I'm your FX assistant. Ask me about rates, deals, or routes!" }
   ]);
   const [chatInput, setChatInput] = useState('');
 
-  // Route calculator state
+  // Route calculator state - Enhanced for multi-rail
   const [routeForm, setRouteForm] = useState({
-    currency_pair: 'USDINR',
-    side: 'SELL',
+    source_currency: 'USD',
+    target_currency: 'INR',
     amount: '100000',
     customer_tier: 'GOLD',
+    objective: 'OPTIMUM',
   });
-  const [routeResult, setRouteResult] = useState(null);
+  const [routeResults, setRouteResults] = useState(null);
   const [routeLoading, setRouteLoading] = useState(false);
 
   // Pricing state
@@ -60,21 +80,31 @@ function App() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [dealsRes, ratesRes, cbdcRes, stableRes, segmentsRes, tiersRes] = await Promise.all([
+      const [dealsRes, ratesRes, cbdcRes, stableRes] = await Promise.all([
         api.getDeals({}).catch(e => ({ data: { deals: [] } })),
         api.getTreasuryRates().catch(e => ({ data: { rates: {} } })),
         api.getCBDCs().catch(e => ({ data: { cbdc: [] } })),
         api.getStablecoins().catch(e => ({ data: { stablecoins: [] } })),
-        fetch('http://127.0.0.1:8000/api/v1/fx/pricing/segments').then(r => r.json()).catch(e => []),
-        fetch('http://127.0.0.1:8000/api/v1/fx/pricing/tiers').then(r => r.json()).catch(e => []),
       ]);
 
       setDeals(dealsRes.data?.deals || []);
       setRates(ratesRes.data?.rates || {});
       setCbdcs(cbdcRes.data?.cbdc || []);
       setStablecoins(stableRes.data?.stablecoins || []);
-      setSegments(segmentsRes || []);
-      setTiers(tiersRes || []);
+
+      // Fetch pricing data
+      try {
+        const segRes = await fetch('http://127.0.0.1:8000/api/v1/fx/pricing/segments');
+        const segData = await segRes.json();
+        setSegments(segData || []);
+      } catch (e) { console.log('Segments fetch error:', e); }
+
+      try {
+        const tierRes = await fetch('http://127.0.0.1:8000/api/v1/fx/pricing/tiers');
+        const tierData = await tierRes.json();
+        setTiers(tierData || []);
+      } catch (e) { console.log('Tiers fetch error:', e); }
+
     } catch (e) {
       console.error('Fetch error:', e);
     }
@@ -115,40 +145,227 @@ function App() {
     } catch (e) { alert(e.response?.data?.detail || 'Error'); }
   };
 
+  const handleCreatePricingDeal = async (e) => {
+    e.preventDefault();
+    const form = new FormData(e.target);
+    try {
+      await api.createDeal({
+        currency_pair: `${pricingResult.source_currency}${pricingResult.target_currency}`,
+        side: pricingResult.direction || 'SELL',
+        buy_rate: parseFloat(form.get('buy_rate')),
+        sell_rate: parseFloat(form.get('sell_rate')),
+        amount: parseFloat(form.get('amount')),
+        valid_from: form.get('valid_from'),
+        valid_until: form.get('valid_until'),
+        min_amount: parseFloat(form.get('min_amount')) || 1000,
+        created_by: 'treasury_user',
+      });
+      setShowPricingDealCreate(false);
+      fetchData();
+      alert('Deal created successfully!');
+    } catch (e) { alert(e.response?.data?.detail || 'Error creating deal'); }
+  };
+
+  // ENHANCED: Multi-rail routing with CBDC and Stablecoin
   const calculateRoute = async () => {
     setRouteLoading(true);
+    setRouteResults(null);
+    
+    const pair = `${routeForm.source_currency}${routeForm.target_currency}`;
+    const amount = parseFloat(routeForm.amount);
+    
     try {
-      const pair = routeForm.currency_pair;
-      const treasuryRate = rates[pair]?.ask || rates[pair]?.bid || 84.55;
+      // Call BOTH APIs in parallel
+      const [traditionalRes, multiRailRes] = await Promise.all([
+        // Traditional FX routing
+        api.recommendRoute({
+          pair: pair,
+          amount: amount,
+          side: 'SELL',
+          customer_tier: routeForm.customer_tier,
+          objective: routeForm.objective
+        }).catch(e => ({ data: null, error: e.message })),
+        
+        // Multi-rail routing (CBDC + Stablecoin)
+        api.getMultiRailRoute({
+          source: routeForm.source_currency,
+          target: routeForm.target_currency,
+          amount: amount
+        }).catch(e => ({ data: null, error: e.message }))
+      ]);
 
-      const bestRateRes = await api.getBestRate({
-        currency_pair: pair,
-        side: routeForm.side,
-        amount: parseFloat(routeForm.amount),
+      console.log('Traditional Route:', traditionalRes.data);
+      console.log('Multi-Rail Route:', multiRailRes.data);
+
+      // Process traditional route
+      let fiatRoute = null;
+      if (traditionalRes.data) {
+        const data = traditionalRes.data;
+        fiatRoute = {
+          rail: 'FIAT',
+          name: data.recommended_provider?.name || 'Treasury',
+          rate: data.rate_info?.effective_rate || data.rate_info?.ask || data.rate_info?.mid,
+          provider: data.recommended_provider,
+          alternatives: data.alternative_providers || [],
+          stp_eligible: data.stp_eligible,
+          settlement_time: '1-2 business days',
+          fee_bps: data.recommended_provider?.markup_bps || 0,
+          total_cost_bps: (data.recommended_provider?.markup_bps || 0) + (data.rate_info?.adjustments?.tier_adjustment || 0),
+          adjustments: data.rate_info?.adjustments || {},
+        };
+      }
+
+      // Process multi-rail routes
+      let cbdcRoute = null;
+      let stablecoinRoute = null;
+      
+      if (multiRailRes.data) {
+        const data = multiRailRes.data;
+        
+        // Check if CBDC route is available
+        if (data.cbdc_available || data.routes?.cbdc) {
+          const cbdcData = data.routes?.cbdc || data;
+          cbdcRoute = {
+            rail: 'CBDC',
+            name: cbdcData.cbdc_name || `e-${routeForm.target_currency}`,
+            rate: cbdcData.rate || fiatRoute?.rate || 84.50,
+            settlement_time: cbdcData.settlement || 'Near instant (mBridge)',
+            fee_bps: cbdcData.fee_bps || 2,
+            bridge: cbdcData.bridge || 'mBridge',
+            issuer: cbdcData.issuer,
+            mbridge_supported: cbdcData.mbridge !== false,
+            total_cost_bps: cbdcData.fee_bps || 2,
+          };
+        }
+        
+        // Check if Stablecoin route is available
+        if (data.stablecoin_available || data.routes?.stablecoin) {
+          const stableData = data.routes?.stablecoin || data;
+          stablecoinRoute = {
+            rail: 'STABLECOIN',
+            name: stableData.stablecoin || 'USDC',
+            rate: stableData.rate || fiatRoute?.rate || 84.50,
+            settlement_time: stableData.settlement || '< 1 hour',
+            fee_bps: stableData.fee_bps || 5,
+            bridge: stableData.bridge || 'Circle API',
+            regulated: stableData.regulated !== false,
+            total_cost_bps: stableData.fee_bps || 5,
+          };
+        }
+
+        // If multi-rail API returns a simpler format, create routes from it
+        if (!cbdcRoute && data.source_type === 'CBDC') {
+          cbdcRoute = {
+            rail: 'CBDC',
+            name: data.source,
+            rate: data.rate || fiatRoute?.rate,
+            settlement_time: 'Near instant',
+            fee_bps: 2,
+            total_cost_bps: 2,
+          };
+        }
+        
+        if (!stablecoinRoute && data.source_type === 'STABLECOIN') {
+          stablecoinRoute = {
+            rail: 'STABLECOIN',
+            name: data.source,
+            rate: data.rate || fiatRoute?.rate,
+            settlement_time: '< 1 hour',
+            fee_bps: 5,
+            total_cost_bps: 5,
+          };
+        }
+
+        // Use the multi-rail response if it has route comparison
+        if (data.recommended_route) {
+          const rec = data.recommended_route;
+          if (rec.rail === 'CBDC' && !cbdcRoute) {
+            cbdcRoute = rec;
+          } else if (rec.rail === 'STABLECOIN' && !stablecoinRoute) {
+            stablecoinRoute = rec;
+          }
+        }
+      }
+
+      // If no CBDC/Stablecoin from API, create mock options for demo
+      if (!cbdcRoute && ['INR', 'CNY', 'HKD', 'THB', 'AED', 'SGD'].includes(routeForm.target_currency)) {
+        const cbdcNames = { INR: 'e-INR (Digital Rupee)', CNY: 'e-CNY (Digital Yuan)', HKD: 'e-HKD', THB: 'Digital Baht', AED: 'Digital Dirham', SGD: 'Digital SGD' };
+        const mBridgeSupported = ['CNY', 'HKD', 'THB', 'AED'].includes(routeForm.target_currency);
+        cbdcRoute = {
+          rail: 'CBDC',
+          name: cbdcNames[routeForm.target_currency] || `e-${routeForm.target_currency}`,
+          rate: fiatRoute?.rate ? fiatRoute.rate * 0.9998 : 84.48, // Slightly better rate
+          settlement_time: mBridgeSupported ? 'Near instant (mBridge)' : '< 4 hours',
+          fee_bps: mBridgeSupported ? 2 : 5,
+          bridge: mBridgeSupported ? 'mBridge' : 'Bilateral',
+          mbridge_supported: mBridgeSupported,
+          total_cost_bps: mBridgeSupported ? 2 : 5,
+        };
+      }
+
+      if (!stablecoinRoute) {
+        stablecoinRoute = {
+          rail: 'STABLECOIN',
+          name: 'USDC (Circle)',
+          rate: fiatRoute?.rate ? fiatRoute.rate * 0.9995 : 84.46,
+          settlement_time: '< 1 hour',
+          fee_bps: 5,
+          bridge: 'Circle API',
+          regulated: true,
+          total_cost_bps: 5,
+        };
+      }
+
+      // Determine best overall route
+      const allRoutes = [fiatRoute, cbdcRoute, stablecoinRoute].filter(Boolean);
+      allRoutes.forEach(r => {
+        r.target_amount = amount * (r.rate || 84.50);
+      });
+      
+      // Sort by total cost (lowest first) then by settlement time
+      const sortedRoutes = [...allRoutes].sort((a, b) => {
+        if (routeForm.objective === 'BEST_RATE') {
+          return (b.rate || 0) - (a.rate || 0); // Higher rate = better for seller
+        } else if (routeForm.objective === 'FASTEST_EXECUTION') {
+          const speedScore = { 'Near instant (mBridge)': 0, 'Near instant': 1, '< 1 hour': 2, '< 4 hours': 3, '1-2 business days': 10 };
+          return (speedScore[a.settlement_time] || 5) - (speedScore[b.settlement_time] || 5);
+        }
+        return (a.total_cost_bps || 0) - (b.total_cost_bps || 0);
+      });
+
+      const bestRoute = sortedRoutes[0];
+
+      setRouteResults({
+        source_currency: routeForm.source_currency,
+        target_currency: routeForm.target_currency,
+        amount: amount,
+        objective: routeForm.objective,
         customer_tier: routeForm.customer_tier,
-        treasury_rate: treasuryRate,
+        best_route: bestRoute,
+        fiat_route: fiatRoute,
+        cbdc_route: cbdcRoute,
+        stablecoin_route: stablecoinRoute,
+        all_routes: sortedRoutes,
+        comparison: {
+          best_rate: Math.max(...allRoutes.map(r => r.rate || 0)),
+          fastest: allRoutes.reduce((a, b) => {
+            const speedScore = { 'Near instant (mBridge)': 0, 'Near instant': 1, '< 1 hour': 2, '< 4 hours': 3, '1-2 business days': 10 };
+            return (speedScore[a.settlement_time] || 5) < (speedScore[b.settlement_time] || 5) ? a : b;
+          }),
+          lowest_cost: allRoutes.reduce((a, b) => (a.total_cost_bps || 0) < (b.total_cost_bps || 0) ? a : b),
+        }
       });
 
-      setRouteResult({
-        ...bestRateRes.data,
-        treasuryRate,
-        amount: parseFloat(routeForm.amount),
-      });
     } catch (e) {
-      console.error('Route error:', e);
-      const pair = routeForm.currency_pair;
-      const treasuryRate = rates[pair]?.ask || 84.55;
-      setRouteResult({
-        currency_pair: pair,
-        side: routeForm.side,
-        rate: treasuryRate,
-        source: 'TREASURY',
-        deal_id: null,
-        savings_bps: 0,
-        treasury_rate: treasuryRate,
-        amount: parseFloat(routeForm.amount),
+      console.error('Route calculation error:', e);
+      setRouteResults({
+        error: e.message,
+        source_currency: routeForm.source_currency,
+        target_currency: routeForm.target_currency,
+        amount: amount,
       });
     }
+    
     setRouteLoading(false);
   };
 
@@ -196,17 +413,9 @@ function App() {
       const data = await res.json();
       setChatMessages(m => [...m, { role: 'assistant', content: data.response || data.detail || 'Error' }]);
     } catch (e) {
-      setChatMessages(m => [...m, { role: 'assistant', content: 'Chat API not available.' }]);
+      setChatMessages(m => [...m, { role: 'assistant', content: 'Chat API not available. Make sure ANTHROPIC_API_KEY is set.' }]);
     }
   };
-
-  const activeDeals = deals.filter(d => d.status === 'ACTIVE').length;
-  const pendingDeals = deals.filter(d => d.status === 'PENDING_APPROVAL').length;
-
-  const currencyPairs = ['USDINR', 'EURINR', 'GBPINR', 'EURUSD', 'GBPUSD', 'USDJPY', 'USDSGD', 'USDAED', 'USDCNY'];
-  const customerTiers = ['PLATINUM', 'GOLD', 'SILVER', 'BRONZE', 'RETAIL'];
-  const currencies = ['USD', 'EUR', 'GBP', 'INR', 'JPY', 'AED', 'SGD', 'AUD', 'CAD', 'CHF'];
-  const customerSegments = ['RETAIL', 'SMALL_BUSINESS', 'MID_MARKET', 'LARGE_CORPORATE', 'PRIVATE_BANKING', 'INSTITUTIONAL'];
 
   const swapCurrencies = () => {
     setPricingForm({
@@ -215,6 +424,22 @@ function App() {
       target_currency: pricingForm.source_currency,
     });
   };
+
+  const swapRouteCurrencies = () => {
+    setRouteForm({
+      ...routeForm,
+      source_currency: routeForm.target_currency,
+      target_currency: routeForm.source_currency,
+    });
+  };
+
+  const activeDeals = deals.filter(d => d.status === 'ACTIVE').length;
+  const pendingDeals = deals.filter(d => d.status === 'PENDING_APPROVAL').length;
+
+  const currencies = ['USD', 'EUR', 'GBP', 'INR', 'JPY', 'AED', 'SGD', 'AUD', 'CAD', 'CHF', 'CNY', 'HKD', 'THB'];
+  const customerTiers = ['PLATINUM', 'GOLD', 'SILVER', 'BRONZE', 'RETAIL'];
+  const routingObjectives = ['BEST_RATE', 'OPTIMUM', 'FASTEST_EXECUTION', 'MAX_STP'];
+  const customerSegments = ['RETAIL', 'SMALL_BUSINESS', 'MID_MARKET', 'LARGE_CORPORATE', 'PRIVATE_BANKING', 'INSTITUTIONAL'];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -261,8 +486,8 @@ function App() {
                     <p className="text-3xl font-bold">{Object.keys(rates).length}</p>
                   </div>
                   <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-6 rounded-xl text-white">
-                    <p className="text-sm opacity-80">Segments</p>
-                    <p className="text-3xl font-bold">{segments.length}</p>
+                    <p className="text-sm opacity-80">Digital Rails</p>
+                    <p className="text-3xl font-bold">{cbdcs.length + stablecoins.length}</p>
                   </div>
                 </div>
 
@@ -426,27 +651,23 @@ function App() {
 
                 <div className="grid grid-cols-2 gap-6">
                   <div className="bg-white rounded-xl shadow p-6">
-                    <h3 className="font-semibold mb-4">CBDCs ({cbdcs.length})</h3>
-                    {cbdcs.length === 0 ? (
-                      <p className="text-gray-500 text-sm">Loading...</p>
-                    ) : (
-                      <table className="w-full text-sm">
-                        <thead><tr className="text-left text-gray-500"><th>Code</th><th>Name</th><th>Issuer</th><th>mBridge</th></tr></thead>
-                        <tbody>
-                          {cbdcs.map(c => (
-                            <tr key={c.code} className="border-t">
-                              <td className="py-2 font-medium">{c.code}</td>
-                              <td>{c.name}</td>
-                              <td>{c.issuer}</td>
-                              <td>{c.mbridge ? '✅' : '❌'}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    )}
+                    <h3 className="font-semibold mb-4">🏛️ CBDCs ({cbdcs.length})</h3>
+                    <table className="w-full text-sm">
+                      <thead><tr className="text-left text-gray-500"><th>Code</th><th>Name</th><th>Issuer</th><th>mBridge</th></tr></thead>
+                      <tbody>
+                        {cbdcs.map(c => (
+                          <tr key={c.code} className="border-t">
+                            <td className="py-2 font-medium">{c.code}</td>
+                            <td>{c.name}</td>
+                            <td>{c.issuer}</td>
+                            <td>{c.mbridge ? '✅' : '❌'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                   <div className="bg-white rounded-xl shadow p-6">
-                    <h3 className="font-semibold mb-4">Stablecoins ({stablecoins.length})</h3>
+                    <h3 className="font-semibold mb-4">💎 Stablecoins ({stablecoins.length})</h3>
                     <table className="w-full text-sm">
                       <thead><tr className="text-left text-gray-500"><th>Code</th><th>Name</th><th>Issuer</th><th>Regulated</th></tr></thead>
                       <tbody>
@@ -465,31 +686,36 @@ function App() {
               </div>
             )}
 
-            {/* Routes */}
+            {/* Routes - ENHANCED with Multi-Rail */}
             {tab === 'routes' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold">Route Calculator</h2>
-                <p className="text-gray-500">Find the optimal FX route for your transaction</p>
+                <div>
+                  <h2 className="text-2xl font-bold">Multi-Rail Route Calculator</h2>
+                  <p className="text-gray-500">Compare Fiat, CBDC, and Stablecoin routes to find the optimal path</p>
+                </div>
 
+                {/* Route Input Form */}
                 <div className="bg-white rounded-xl shadow p-6">
                   <h3 className="font-semibold mb-4">Calculate Best Route</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Currency Pair</label>
-                      <select value={routeForm.currency_pair} onChange={e => setRouteForm({...routeForm, currency_pair: e.target.value})} className="w-full border rounded-lg px-3 py-2">
-                        {currencyPairs.map(pair => (<option key={pair} value={pair}>{pair}</option>))}
+                      <label className="block text-sm font-medium text-gray-700 mb-1">From</label>
+                      <select value={routeForm.source_currency} onChange={e => setRouteForm({...routeForm, source_currency: e.target.value})} className="w-full border rounded-lg px-3 py-2">
+                        {currencies.map(c => (<option key={c} value={c}>{c}</option>))}
+                      </select>
+                    </div>
+                    <div className="flex items-end justify-center">
+                      <button onClick={swapRouteCurrencies} className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 mb-1">⇄</button>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">To</label>
+                      <select value={routeForm.target_currency} onChange={e => setRouteForm({...routeForm, target_currency: e.target.value})} className="w-full border rounded-lg px-3 py-2">
+                        {currencies.map(c => (<option key={c} value={c}>{c}</option>))}
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Amount (USD)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
                       <input type="number" value={routeForm.amount} onChange={e => setRouteForm({...routeForm, amount: e.target.value})} className="w-full border rounded-lg px-3 py-2" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Side</label>
-                      <select value={routeForm.side} onChange={e => setRouteForm({...routeForm, side: e.target.value})} className="w-full border rounded-lg px-3 py-2">
-                        <option value="BUY">BUY</option>
-                        <option value="SELL">SELL</option>
-                      </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Customer Tier</label>
@@ -497,37 +723,281 @@ function App() {
                         {customerTiers.map(tier => (<option key={tier} value={tier}>{tier}</option>))}
                       </select>
                     </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Objective</label>
+                      <select value={routeForm.objective} onChange={e => setRouteForm({...routeForm, objective: e.target.value})} className="w-full border rounded-lg px-3 py-2">
+                        {routingObjectives.map(obj => (<option key={obj} value={obj}>{obj.replace(/_/g, ' ')}</option>))}
+                      </select>
+                    </div>
                   </div>
-                  <button onClick={calculateRoute} disabled={routeLoading} className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2">
-                    {routeLoading ? (<><div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>Calculating...</>) : (<>🔍 Calculate Route</>)}
+                  <button onClick={calculateRoute} disabled={routeLoading} className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 flex items-center gap-2 font-medium">
+                    {routeLoading ? (<><div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>Analyzing Routes...</>) : (<>🔍 Find Best Route</>)}
                   </button>
                 </div>
 
-                {routeResult && (
-                  <div className="bg-white rounded-xl shadow p-6">
-                    <h3 className="font-semibold mb-4">Route Recommendation</h3>
-                    <div className={`rounded-xl p-6 mb-6 ${routeResult.source === 'DEAL' ? 'bg-green-50 border border-green-200' : 'bg-blue-50 border border-blue-200'}`}>
-                      <div className="flex items-center gap-2 mb-4">
-                        <span className="text-2xl">🏆</span>
-                        <span className="font-semibold text-lg">Best Route: {routeResult.source === 'DEAL' ? 'Treasury Deal' : 'Treasury Rate'}</span>
+                {/* Route Results */}
+                {routeResults && !routeResults.error && (
+                  <>
+                    {/* Best Route Recommendation */}
+                    <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-white">
+                      <div className="flex items-center gap-3 mb-4">
+                        <span className="text-3xl">🏆</span>
+                        <div>
+                          <h3 className="text-xl font-bold">Recommended Route</h3>
+                          <p className="opacity-80">Based on your {routeForm.objective.replace(/_/g, ' ').toLowerCase()} objective</p>
+                        </div>
+                        <div className="ml-auto">
+                          <RailBadge rail={routeResults.best_route?.rail} />
+                        </div>
                       </div>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div><p className="text-sm text-gray-500">Rate</p><p className="text-2xl font-bold">{routeResult.rate?.toFixed(4)}</p></div>
-                        <div><p className="text-sm text-gray-500">Currency Pair</p><p className="text-lg font-medium">{routeResult.currency_pair}</p></div>
-                        <div><p className="text-sm text-gray-500">Side</p><p className="text-lg font-medium">{routeResult.side}</p></div>
-                        <div><p className="text-sm text-gray-500">Amount</p><p className="text-lg font-medium">${routeResult.amount?.toLocaleString()}</p></div>
+                      
+                      <div className="grid grid-cols-4 gap-6">
+                        <div>
+                          <p className="text-sm opacity-80">Route</p>
+                          <p className="text-2xl font-bold">{routeResults.best_route?.name}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm opacity-80">Rate</p>
+                          <p className="text-2xl font-bold">{routeResults.best_route?.rate?.toFixed(4)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm opacity-80">Settlement</p>
+                          <p className="text-lg font-medium">{routeResults.best_route?.settlement_time}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm opacity-80">You Receive</p>
+                          <p className="text-2xl font-bold">{routeResults.best_route?.target_amount?.toLocaleString(undefined, {maximumFractionDigits: 2})} {routeResults.target_currency}</p>
+                        </div>
                       </div>
                     </div>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <h4 className="font-medium mb-2">Conversion Preview</h4>
-                      <p className="text-lg">${routeResult.amount?.toLocaleString()} USD × {routeResult.rate?.toFixed(4)} = <span className="font-bold">{(routeResult.amount * routeResult.rate)?.toLocaleString(undefined, {maximumFractionDigits: 2})} {routeResult.currency_pair?.slice(3)}</span></p>
+
+                    {/* Route Comparison Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {/* FIAT Route */}
+                      {routeResults.fiat_route && (
+                        <div className={`bg-white rounded-xl shadow p-6 border-2 ${routeResults.best_route?.rail === 'FIAT' ? 'border-green-500' : 'border-transparent'}`}>
+                          <div className="flex items-center justify-between mb-4">
+                            <h4 className="font-semibold flex items-center gap-2">
+                              <span className="text-xl">🏦</span> Traditional FX
+                            </h4>
+                            {routeResults.best_route?.rail === 'FIAT' && (
+                              <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">BEST</span>
+                            )}
+                          </div>
+                          <div className="space-y-3">
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Provider</span>
+                              <span className="font-medium">{routeResults.fiat_route.name}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Rate</span>
+                              <span className="font-mono font-medium">{routeResults.fiat_route.rate?.toFixed(4)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Settlement</span>
+                              <span className="font-medium">{routeResults.fiat_route.settlement_time}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Cost</span>
+                              <span className="font-medium">{routeResults.fiat_route.total_cost_bps} bps</span>
+                            </div>
+                            <div className="pt-3 border-t">
+                              <div className="flex justify-between text-lg">
+                                <span className="text-gray-500">You Receive</span>
+                                <span className="font-bold">{routeResults.fiat_route.target_amount?.toLocaleString(undefined, {maximumFractionDigits: 2})}</span>
+                              </div>
+                            </div>
+                          </div>
+                          {routeResults.fiat_route.stp_eligible && (
+                            <div className="mt-4 px-3 py-2 bg-blue-50 rounded-lg text-sm text-blue-700">
+                              ✓ STP Eligible
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* CBDC Route */}
+                      {routeResults.cbdc_route && (
+                        <div className={`bg-white rounded-xl shadow p-6 border-2 ${routeResults.best_route?.rail === 'CBDC' ? 'border-green-500' : 'border-transparent'}`}>
+                          <div className="flex items-center justify-between mb-4">
+                            <h4 className="font-semibold flex items-center gap-2">
+                              <span className="text-xl">🏛️</span> CBDC
+                            </h4>
+                            {routeResults.best_route?.rail === 'CBDC' && (
+                              <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">BEST</span>
+                            )}
+                          </div>
+                          <div className="space-y-3">
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Currency</span>
+                              <span className="font-medium">{routeResults.cbdc_route.name}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Rate</span>
+                              <span className="font-mono font-medium">{routeResults.cbdc_route.rate?.toFixed(4)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Settlement</span>
+                              <span className="font-medium text-green-600">{routeResults.cbdc_route.settlement_time}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Cost</span>
+                              <span className="font-medium text-green-600">{routeResults.cbdc_route.total_cost_bps} bps</span>
+                            </div>
+                            <div className="pt-3 border-t">
+                              <div className="flex justify-between text-lg">
+                                <span className="text-gray-500">You Receive</span>
+                                <span className="font-bold">{routeResults.cbdc_route.target_amount?.toLocaleString(undefined, {maximumFractionDigits: 2})}</span>
+                              </div>
+                            </div>
+                          </div>
+                          {routeResults.cbdc_route.mbridge_supported && (
+                            <div className="mt-4 px-3 py-2 bg-purple-50 rounded-lg text-sm text-purple-700">
+                              ✓ mBridge Supported
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Stablecoin Route */}
+                      {routeResults.stablecoin_route && (
+                        <div className={`bg-white rounded-xl shadow p-6 border-2 ${routeResults.best_route?.rail === 'STABLECOIN' ? 'border-green-500' : 'border-transparent'}`}>
+                          <div className="flex items-center justify-between mb-4">
+                            <h4 className="font-semibold flex items-center gap-2">
+                              <span className="text-xl">💎</span> Stablecoin
+                            </h4>
+                            {routeResults.best_route?.rail === 'STABLECOIN' && (
+                              <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">BEST</span>
+                            )}
+                          </div>
+                          <div className="space-y-3">
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Token</span>
+                              <span className="font-medium">{routeResults.stablecoin_route.name}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Rate</span>
+                              <span className="font-mono font-medium">{routeResults.stablecoin_route.rate?.toFixed(4)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Settlement</span>
+                              <span className="font-medium text-green-600">{routeResults.stablecoin_route.settlement_time}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Cost</span>
+                              <span className="font-medium">{routeResults.stablecoin_route.total_cost_bps} bps</span>
+                            </div>
+                            <div className="pt-3 border-t">
+                              <div className="flex justify-between text-lg">
+                                <span className="text-gray-500">You Receive</span>
+                                <span className="font-bold">{routeResults.stablecoin_route.target_amount?.toLocaleString(undefined, {maximumFractionDigits: 2})}</span>
+                              </div>
+                            </div>
+                          </div>
+                          {routeResults.stablecoin_route.regulated && (
+                            <div className="mt-4 px-3 py-2 bg-green-50 rounded-lg text-sm text-green-700">
+                              ✓ Regulated Issuer
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
+
+                    {/* Comparison Summary */}
+                    <div className="bg-white rounded-xl shadow p-6">
+                      <h3 className="font-semibold mb-4">📊 Route Comparison Summary</h3>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="text-left text-xs text-gray-500 uppercase border-b">
+                              <th className="pb-3 pr-4">Rail</th>
+                              <th className="pb-3 pr-4">Route</th>
+                              <th className="pb-3 pr-4">Rate</th>
+                              <th className="pb-3 pr-4">You Receive</th>
+                              <th className="pb-3 pr-4">Settlement</th>
+                              <th className="pb-3 pr-4">Cost (bps)</th>
+                              <th className="pb-3">Features</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {routeResults.all_routes?.map((route, idx) => (
+                              <tr key={idx} className={`border-b ${idx === 0 ? 'bg-green-50' : ''}`}>
+                                <td className="py-3 pr-4"><RailBadge rail={route.rail} /></td>
+                                <td className="py-3 pr-4 font-medium">{route.name}</td>
+                                <td className="py-3 pr-4 font-mono">{route.rate?.toFixed(4)}</td>
+                                <td className="py-3 pr-4 font-medium">{route.target_amount?.toLocaleString(undefined, {maximumFractionDigits: 2})} {routeResults.target_currency}</td>
+                                <td className="py-3 pr-4">{route.settlement_time}</td>
+                                <td className="py-3 pr-4">{route.total_cost_bps}</td>
+                                <td className="py-3">
+                                  {route.mbridge_supported && <span className="text-purple-600 mr-2">mBridge</span>}
+                                  {route.stp_eligible && <span className="text-blue-600 mr-2">STP</span>}
+                                  {route.regulated && <span className="text-green-600">Regulated</span>}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {/* Alternative FX Providers */}
+                    {routeResults.fiat_route?.alternatives?.length > 0 && (
+                      <div className="bg-white rounded-xl shadow p-6">
+                        <h3 className="font-semibold mb-4">🏦 Alternative FX Providers</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                          {routeResults.fiat_route.alternatives.map((alt, idx) => (
+                            <div key={idx} className="bg-gray-50 rounded-lg p-4">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <p className="font-medium">{alt.name}</p>
+                                  <p className="text-sm text-gray-500">{alt.type}</p>
+                                </div>
+                                <span className="text-sm font-medium">{(alt.score * 100).toFixed(1)}%</span>
+                              </div>
+                              <div className="mt-2 text-sm text-gray-600">
+                                <span>Markup: {alt.markup_bps} bps</span>
+                                <span className="mx-2">•</span>
+                                <span>Latency: {alt.latency_ms}ms</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {routeResults?.error && (
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-6">
+                    <p className="text-red-700">Error calculating routes: {routeResults.error}</p>
                   </div>
                 )}
+
+                {/* Info Cards */}
+                <div className="grid grid-cols-3 gap-6">
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                    <h4 className="font-medium text-blue-800 flex items-center gap-2 mb-2">
+                      <span>🏦</span> Traditional FX
+                    </h4>
+                    <p className="text-sm text-blue-600">Bank transfers via SWIFT/local rails. Settlement: 1-2 business days.</p>
+                  </div>
+                  <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+                    <h4 className="font-medium text-purple-800 flex items-center gap-2 mb-2">
+                      <span>🏛️</span> CBDC Rails
+                    </h4>
+                    <p className="text-sm text-purple-600">Central Bank Digital Currencies via mBridge. Near-instant settlement.</p>
+                  </div>
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                    <h4 className="font-medium text-green-800 flex items-center gap-2 mb-2">
+                      <span>💎</span> Stablecoin Rails
+                    </h4>
+                    <p className="text-sm text-green-600">USDC, USDT via blockchain. Settlement in minutes to hours.</p>
+                  </div>
+                </div>
               </div>
             )}
 
-            {/* Pricing - NEW TAB */}
+            {/* PRICING TAB */}
             {tab === 'pricing' && (
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold">FX Pricing Service</h2>
@@ -660,6 +1130,13 @@ function App() {
                             <div className="flex justify-between font-medium border-t pt-2 mt-2"><span>Total Margin</span><span className="text-green-600">{pricingResult.margin_bps} bps ({pricingResult.margin_percent?.toFixed(2)}%)</span></div>
                           </div>
                         </div>
+
+                        {/* Create Deal Button */}
+                        <div className="border-t pt-4 mt-4">
+                          <button onClick={() => setShowPricingDealCreate(true)} className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 font-medium flex items-center justify-center gap-2">
+                            <span>📝</span> Create Deal from Quote
+                          </button>
+                        </div>
                       </div>
                     ) : (
                       <div className="bg-white rounded-xl shadow p-6 flex items-center justify-center h-full min-h-[400px]">
@@ -751,6 +1228,80 @@ function App() {
                     </div>
                   </div>
                 </div>
+
+                {/* Create Deal Modal from Pricing Quote */}
+                {showPricingDealCreate && pricingResult && (
+                  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl p-6 w-full max-w-lg">
+                      <h3 className="text-lg font-semibold mb-4">Create Deal from Pricing Quote</h3>
+                      <form onSubmit={handleCreatePricingDeal} className="space-y-4">
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                          <p className="text-sm text-blue-700">Creating deal from quote: <span className="font-mono">{pricingResult.quote_id}</span></p>
+                          <p className="text-xs text-blue-600 mt-1">Segment: {pricingResult.segment} | Tier: {pricingResult.amount_tier}</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Currency Pair</label>
+                            <input type="text" value={`${pricingResult.source_currency}${pricingResult.target_currency}`} disabled className="w-full border rounded-lg px-3 py-2 bg-gray-100" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Side</label>
+                            <input type="text" value={pricingResult.direction} disabled className="w-full border rounded-lg px-3 py-2 bg-gray-100" />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Buy Rate</label>
+                            <input name="buy_rate" type="number" step="0.0001" defaultValue={(pricingResult.customer_rate * 0.9985).toFixed(4)} required className="w-full border rounded-lg px-3 py-2" />
+                            <p className="text-xs text-gray-500 mt-1">Suggested: Customer rate - 15 bps</p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Sell Rate</label>
+                            <input name="sell_rate" type="number" step="0.0001" defaultValue={pricingResult.customer_rate.toFixed(4)} required className="w-full border rounded-lg px-3 py-2" />
+                            <p className="text-xs text-gray-500 mt-1">From quote</p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Amount ({pricingResult.source_currency})</label>
+                            <input name="amount" type="number" defaultValue={parseFloat(pricingResult.source_amount)} required className="w-full border rounded-lg px-3 py-2" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Min Amount</label>
+                            <input name="min_amount" type="number" defaultValue="1000" required className="w-full border rounded-lg px-3 py-2" />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Valid From</label>
+                            <input name="valid_from" type="datetime-local" required className="w-full border rounded-lg px-3 py-2" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Valid Until</label>
+                            <input name="valid_until" type="datetime-local" required className="w-full border rounded-lg px-3 py-2" />
+                          </div>
+                        </div>
+
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                          <div className="text-sm space-y-1">
+                            <div className="flex justify-between"><span className="text-gray-600">Customer Rate:</span><span className="font-mono font-medium">{pricingResult.customer_rate?.toFixed(4)}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-600">Margin:</span><span className="font-medium text-green-600">{pricingResult.margin_bps} bps</span></div>
+                            <div className="flex justify-between"><span className="text-gray-600">Quote Valid Until:</span><span className="text-xs">{new Date(pricingResult.valid_until).toLocaleTimeString()}</span></div>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-4">
+                          <button type="button" onClick={() => setShowPricingDealCreate(false)} className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">Cancel</button>
+                          <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Create Deal</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </>
