@@ -48,19 +48,19 @@ TOOLS = [
     },
     {
         "name": "fx_list_deals",
-        "description": "List all FX treasury deals with their status",
+        "description": "List FX treasury deals. Use this to find ALL deals for a currency pair (including DRAFT, PENDING_APPROVAL, ACTIVE, EXPIRED). Can filter by status and currency_pair. When user asks 'is there a deal', use this WITHOUT status filter to see all deals.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "status": {"type": "string", "description": "Filter by status: DRAFT, PENDING_APPROVAL, ACTIVE, EXPIRED"},
-                "currency_pair": {"type": "string", "description": "Filter by currency pair"}
+                "status": {"type": "string", "description": "Optional: Filter by status: DRAFT, PENDING_APPROVAL, ACTIVE, EXPIRED. Leave empty to see ALL deals."},
+                "currency_pair": {"type": "string", "description": "Optional: Filter by currency pair like USDINR, USDJPY"}
             },
             "required": []
         }
     },
     {
         "name": "fx_get_active_deals",
-        "description": "Get active deals for a specific currency pair",
+        "description": "Get ONLY active deals for a currency pair. Only use this when specifically asked about 'active deals'. For general deal queries, use fx_list_deals instead.",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -241,7 +241,10 @@ IMPORTANT: Always use the tools to get real data. Do not make up rates or inform
 Tool usage guidelines:
 - For rate queries: use fx_get_rate with the currency pair
 - For price/quote/conversion: use fx_get_pricing_quote with currencies and amount
-- For deals: use fx_list_deals or fx_get_active_deals
+- For deal queries:
+  * When asked "is there a deal" or "any deals" → use fx_list_deals WITHOUT status filter to see ALL deals (DRAFT, PENDING_APPROVAL, ACTIVE, EXPIRED)
+  * When asked specifically about "active deals" → use fx_get_active_deals
+  * Always search ALL statuses first, then mention if deals are in draft/pending/expired status
 - For CBDCs: use fx_list_cbdcs
 - For stablecoins: use fx_list_stablecoins
 - For segments/tiers: use fx_get_segments or fx_get_tiers
