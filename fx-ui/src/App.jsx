@@ -433,6 +433,20 @@ function App() {
     });
   };
 
+  const goToPricingWithPair = (pair) => {
+    // Parse currency pair (e.g., "USDINR" -> "USD" and "INR")
+    // Common pairs: 3-letter currencies, so split at position 3
+    const source = pair.substring(0, 3);
+    const target = pair.substring(3);
+
+    setPricingForm({
+      ...pricingForm,
+      source_currency: source,
+      target_currency: target,
+    });
+    setTab('pricing');
+  };
+
   const activeDeals = deals.filter(d => d.status === 'ACTIVE').length;
   const pendingDeals = deals.filter(d => d.status === 'PENDING_APPROVAL').length;
 
@@ -634,7 +648,7 @@ function App() {
                 <div className="bg-white rounded-xl shadow p-6">
                   <h3 className="font-semibold mb-4">Treasury Rates</h3>
                   <table className="w-full">
-                    <thead><tr className="text-left text-xs text-gray-500 uppercase"><th className="pb-3">Pair</th><th>Bid</th><th>Ask</th><th>Mid</th><th>Position</th></tr></thead>
+                    <thead><tr className="text-left text-xs text-gray-500 uppercase"><th className="pb-3">Pair</th><th>Bid</th><th>Ask</th><th>Mid</th><th>Position</th><th>Action</th></tr></thead>
                     <tbody>
                       {Object.entries(rates).map(([pair, r]) => (
                         <tr key={pair} className="border-t">
@@ -643,6 +657,14 @@ function App() {
                           <td>{r.ask?.toFixed(4)}</td>
                           <td>{r.mid?.toFixed(4)}</td>
                           <td><span className={`px-2 py-1 rounded text-xs ${r.position === 'LONG' ? 'bg-blue-100 text-blue-700' : r.position === 'SHORT' ? 'bg-red-100 text-red-700' : 'bg-gray-100'}`}>{r.position}</span></td>
+                          <td>
+                            <button
+                              onClick={() => goToPricingWithPair(pair)}
+                              className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs font-medium"
+                            >
+                              💰 Pricing
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
