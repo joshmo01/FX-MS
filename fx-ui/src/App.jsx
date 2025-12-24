@@ -527,7 +527,10 @@ function App() {
                     {deals.length === 0 ? (
                       <p className="text-gray-500">No deals yet. Create one!</p>
                     ) : (
-                      deals.slice(0, 5).map(d => (
+                      [...deals]
+                        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                        .slice(0, 5)
+                        .map(d => (
                         <div key={d.deal_id} className="flex justify-between items-center py-2 border-b">
                           <div>
                             <p className="font-medium">{d.deal_id}</p>
@@ -567,7 +570,9 @@ function App() {
                       {deals.length === 0 ? (
                         <tr><td colSpan="7" className="px-6 py-8 text-center text-gray-500">No deals yet</td></tr>
                       ) : (
-                        deals.map(d => (
+                        [...deals]
+                          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                          .map(d => (
                           <tr key={d.deal_id} className="border-t hover:bg-gray-50">
                             <td className="px-6 py-4 font-medium text-blue-600">{d.deal_id}</td>
                             <td className="px-6 py-4">{d.currency_pair}</td>
