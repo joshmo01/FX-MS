@@ -19,7 +19,10 @@ class Settings(BaseSettings):
     # Server
     host: str = "0.0.0.0"
     port: int = 8000
-    
+
+    # Anthropic API Configuration
+    anthropic_api_key: Optional[str] = Field(default=None, alias="ANTHROPIC_API_KEY")
+
     # Refinitiv/Reuters Configuration
     refinitiv_client_id: Optional[str] = Field(default=None, alias="REFINITIV_CLIENT_ID")
     refinitiv_client_secret: Optional[str] = Field(default=None, alias="REFINITIV_CLIENT_SECRET")
