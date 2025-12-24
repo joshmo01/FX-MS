@@ -6,10 +6,10 @@ from pydantic import BaseModel
 import httpx
 import os
 import json
+from config import get_settings
 
 router = APIRouter(prefix="/api/v1/fx", tags=["chat"])
 
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 API_BASE_URL = "http://127.0.0.1:8000"
 
 class ChatRequest(BaseModel):
@@ -254,7 +254,10 @@ Be concise. Format numbers with commas. Show rates to 4 decimal places."""
 
 @router.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
-    if not ANTHROPIC_API_KEY:
+    settings = get_settings()
+    anthropic_api_key = settings.anthropic_api_key
+
+    if not anthropic_api_key:
         return ChatResponse(response="Chat requires ANTHROPIC_API_KEY environment variable. Please set it and restart the server.\n\nExample: export ANTHROPIC_API_KEY='your-key-here'")
     
     try:
@@ -265,7 +268,7 @@ async def chat(request: ChatRequest):
             response = await client.post(
                 "https://api.anthropic.com/v1/messages",
                 headers={
-                    "x-api-key": ANTHROPIC_API_KEY,
+                    "x-api-key": anthropic_api_key,
                     "anthropic-version": "2023-06-01",
                     "content-type": "application/json",
                 },
@@ -311,7 +314,7 @@ async def chat(request: ChatRequest):
                 response = await client.post(
                     "https://api.anthropic.com/v1/messages",
                     headers={
-                        "x-api-key": ANTHROPIC_API_KEY,
+                        "x-api-key": anthropic_api_key,
                         "anthropic-version": "2023-06-01",
                         "content-type": "application/json",
                     },
