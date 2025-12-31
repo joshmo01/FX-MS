@@ -109,11 +109,86 @@ class SmartRoutingEngine:
         return round(score, 4)
     
     def recommend_route(self, pair: str, amount: float, side: str = "BUY",
-                        customer_tier: str = "RETAIL", objective: str = "OPTIMUM") -> dict:
+                        customer_tier: str = "RETAIL", objective: str = "OPTIMUM",
+                        customer_segment: str = None, **kwargs) -> dict:
         # Get all providers supporting this pair
-        eligible_providers = []
+        all_supporting_providers = []
         for pid, pinfo in self.fx_providers.get("providers", {}).items():
             if pair.upper() in pinfo.get("supported_pairs", []):
+                all_supporting_providers.append(pid)
+
+        # Determine currency category
+        base_currency = pair[:3] if len(pair) >= 6 else "USD"
+        quote_currency = pair[3:] if len(pair) >= 6 else "INR"
+        currency_category = self._get_currency_category(quote_currency)
+
+        # Build provider context for rules engine
+        from app.services.rules_engine import ProviderContext, RulesEngine, RuleType
+
+        provider_context = ProviderContext(
+            currency_pair=pair.upper(),
+            base_currency=base_currency,
+            quote_currency=quote_currency,
+            currency_category=currency_category,
+            amount=amount,
+            direction=side,
+            customer_tier=customer_tier,
+            customer_segment=customer_segment,
+            routing_objective=objective,
+            available_providers=all_supporting_providers,
+            custom_attributes=kwargs,
+            timestamp=datetime.utcnow()
+        )
+
+        # Evaluate provider selection rules
+        engine = RulesEngine()
+        rule_result = engine.evaluate(RuleType.PROVIDER_SELECTION, provider_context)
+
+        # Apply rule-based provider filtering and objective override
+        if rule_result.matched:
+            provider_actions = rule_result.actions.provider_selection
+
+            # Override routing objective if specified
+            if provider_actions.routing_objective_override:
+                objective = provider_actions.routing_objective_override
+
+            # Filter providers based on preferred/excluded lists
+            if provider_actions.preferred_providers:
+                # Use only preferred providers that are available
+                eligible_provider_ids = [
+                    p for p in provider_actions.preferred_providers
+                    if p in all_supporting_providers
+                ]
+                if not eligible_provider_ids:
+                    # Fallback if no preferred providers available
+                    eligible_provider_ids = all_supporting_providers
+            else:
+                eligible_provider_ids = all_supporting_providers
+
+            # Apply exclusions
+            if provider_actions.excluded_providers:
+                eligible_provider_ids = [
+                    p for p in eligible_provider_ids
+                    if p not in provider_actions.excluded_providers
+                ]
+
+            # Handle force_provider
+            if provider_actions.force_provider and eligible_provider_ids:
+                eligible_provider_ids = [eligible_provider_ids[0]]
+
+            rule_applied_id = rule_result.winning_rule.rule_id
+            rule_applied_name = rule_result.winning_rule.rule_name
+        else:
+            # No rule matched - use all supporting providers
+            eligible_provider_ids = all_supporting_providers
+            rule_applied_id = None
+            rule_applied_name = None
+
+        # Score and build provider details
+        eligible_providers = []
+        for pid in eligible_provider_ids:
+            pinfo = self.fx_providers.get("providers", {}).get(pid)
+            if pinfo:
                 score = self.score_provider(pid, objective)
                 eligible_providers.append({
                     "provider_id": pid,
@@ -124,18 +199,18 @@ class SmartRoutingEngine:
                     "latency_ms": pinfo.get("avg_latency_ms", 100),
                     "reliability": pinfo.get("reliability_score", 0.9)
                 })
-        
+
         # Sort by score
         eligible_providers.sort(key=lambda x: x["score"], reverse=True)
-        
+
         # Get effective rate
         rate_info = self.calculate_effective_rate(pair, side, amount, customer_tier)
-        
+
         # Check STP eligibility
         tier_info = self.get_customer_tier(customer_tier)
         stp_threshold = tier_info.get("stp_threshold_usd", 50000) if tier_info else 50000
         stp_eligible = amount <= stp_threshold
-        
+
         return {
             "pair": pair,
             "amount": amount,
@@ -147,8 +222,25 @@ class SmartRoutingEngine:
             "recommended_provider": eligible_providers[0] if eligible_providers else None,
             "alternative_providers": eligible_providers[1:3] if len(eligible_providers) > 1 else [],
             "all_providers": eligible_providers,
+            "rule_applied_id": rule_applied_id,
+            "rule_applied_name": rule_applied_name,
             "timestamp": datetime.utcnow().isoformat()
         }
+
+    def _get_currency_category(self, currency: str) -> str:
+        """Helper to determine currency category"""
+        g10 = ["USD", "EUR", "JPY", "GBP", "CHF", "AUD", "NZD", "CAD", "SEK", "NOK"]
+        minor = ["SGD", "HKD", "DKK", "PLN", "CZK", "HUF"]
+        exotic = ["TRY", "ZAR", "MXN", "BRL", "ARS", "RUB"]
+
+        if currency in g10:
+            return "G10"
+        elif currency in minor:
+            return "MINOR"
+        elif currency in exotic:
+            return "EXOTIC"
+        else:
+            return "RESTRICTED"
 
 
 # Singleton instance

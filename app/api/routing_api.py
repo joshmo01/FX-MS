@@ -57,9 +57,15 @@ def recommend_route(
     amount: float = 10000,
     side: str = "BUY",
     customer_tier: str = "RETAIL",
-    objective: str = "OPTIMUM"
+    objective: str = "OPTIMUM",
+    customer_segment: Optional[str] = None,
+    office: Optional[str] = None,
+    region: Optional[str] = None
 ):
-    return routing_engine.recommend_route(pair, amount, side, customer_tier, objective)
+    return routing_engine.recommend_route(
+        pair, amount, side, customer_tier, objective,
+        customer_segment=customer_segment, office=office, region=region
+    )
 
 @router.get("/objectives")
 def get_routing_objectives():

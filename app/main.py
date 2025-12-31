@@ -11,6 +11,7 @@ from app.api.routing_api import router as routing_router
 from app.api.multi_rail_api import router as multi_rail_router
 from app.api.deals_api import router as deals_router
 from app.api.chat_api import router as chat_router
+from app.api.rules_api import router as rules_router
 
 app = FastAPI(
     title="FX Smart Routing Engine",
@@ -31,12 +32,13 @@ app.include_router(multi_rail_router)
 app.include_router(deals_router)
 app.include_router(chat_router)
 app.include_router(pricing_router)
+app.include_router(rules_router)
 
 @app.get("/")
 async def root():
     return {
         "service": "FX Smart Routing Engine",
-        "version": "2.1.0",
+        "version": "2.2.0",
         "features": [
             "Treasury rate management",
             "Customer tier pricing",
@@ -45,7 +47,8 @@ async def root():
             "Stablecoin support (5 coins)",
             "mBridge cross-border",
             "Treasury deals with approval workflow",
-            "Chat assistant"
+            "Chat assistant",
+            "Rules engine for provider selection and margin adjustments"
         ]
     }
 
