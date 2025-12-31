@@ -3,7 +3,7 @@ FX Pricing API Endpoints
 """
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Dict, Any
 from decimal import Decimal
 from datetime import datetime, timedelta
 import uuid
@@ -18,6 +18,11 @@ class QuoteRequest(BaseModel):
     segment: str = "MID_MARKET"
     direction: str = "SELL"
     negotiated_discount_bps: float = 0
+    # Extensible fields for rules engine
+    office: Optional[str] = None
+    region: Optional[str] = None
+    customer_tier: Optional[str] = None
+    custom_attributes: Optional[Dict[str, Any]] = None
 
 class QuoteResponse(BaseModel):
     quote_id: str
@@ -136,24 +141,101 @@ async def get_categories():
 async def get_quote(request: QuoteRequest):
     if request.segment not in SEGMENTS:
         raise HTTPException(status_code=400, detail="Invalid segment: " + request.segment)
-    
+
     seg_config = SEGMENTS[request.segment]
     mid_rate = get_mid_rate(request.source_currency, request.target_currency)
     tier = get_tier(request.amount)
     cat_name, cat_data = get_currency_category(request.target_currency)
     currency_factor = get_currency_factor(request.segment, cat_data)
-    
-    total_margin_bps = seg_config["base"] + tier["adj"] + currency_factor - request.negotiated_discount_bps
-    total_margin_bps = max(seg_config["min"], min(seg_config["max"], total_margin_bps))
+
+    # Build pricing context for rules engine
+    from app.services.rules_engine import PricingContext, RulesEngine, RuleType
+
+    pricing_context = PricingContext(
+        customer_segment=request.segment,
+        customer_id=request.customer_id,
+        customer_tier=request.customer_tier,
+        currency_pair=f"{request.source_currency}{request.target_currency}",
+        base_currency=request.source_currency,
+        quote_currency=request.target_currency,
+        currency_category=cat_name,
+        amount=request.amount,
+        amount_tier=tier["id"],
+        direction=request.direction,
+        office=request.office,
+        region=request.region,
+        negotiated_discount_bps=request.negotiated_discount_bps,
+        segment_base_margin=seg_config["base"],
+        tier_adjustment=tier["adj"],
+        currency_factor=currency_factor,
+        custom_attributes=request.custom_attributes or {},
+        timestamp=datetime.utcnow()
+    )
+
+    # Evaluate pricing rules
+    engine = RulesEngine()
+    rule_result = engine.evaluate(RuleType.MARGIN_ADJUSTMENT, pricing_context)
+
+    # Calculate margin with or without rule adjustments
+    if rule_result.matched:
+        margin_actions = rule_result.actions.margin_adjustment
+
+        # Apply rule-based margin calculation
+        base_margin = margin_actions.base_margin_override if margin_actions.base_margin_override is not None else seg_config["base"]
+        tier_adj_multiplier = margin_actions.tier_adjustment_multiplier if margin_actions.tier_adjustment_multiplier is not None else 1.0
+        tier_adjustment = tier["adj"] * tier_adj_multiplier
+        additional_margin = margin_actions.additional_margin_bps if margin_actions.additional_margin_bps is not None else 0
+
+        total_margin_bps = (
+            base_margin +
+            tier_adjustment +
+            currency_factor +
+            additional_margin -
+            request.negotiated_discount_bps
+        )
+
+        # Apply rule-specific min/max
+        min_margin = margin_actions.min_margin_bps if margin_actions.min_margin_bps is not None else seg_config["min"]
+        max_margin = margin_actions.max_margin_bps if margin_actions.max_margin_bps is not None else seg_config["max"]
+        total_margin_bps = max(min_margin, min(max_margin, total_margin_bps))
+
+        # Build margin breakdown with rule info
+        margin_breakdown = {
+            "segment_base_bps": seg_config["base"],
+            "tier_adjustment_bps": tier["adj"],
+            "currency_factor_bps": currency_factor,
+            "negotiated_discount_bps": request.negotiated_discount_bps,
+            "rule_applied_id": rule_result.winning_rule.rule_id,
+            "rule_applied_name": rule_result.winning_rule.rule_name,
+            "rule_base_override_bps": margin_actions.base_margin_override,
+            "rule_additional_margin_bps": additional_margin,
+            "rule_tier_multiplier": tier_adj_multiplier,
+            "total_before_constraints": base_margin + tier_adjustment + currency_factor + additional_margin - request.negotiated_discount_bps,
+        }
+    else:
+        # Fallback to default calculation
+        total_margin_bps = seg_config["base"] + tier["adj"] + currency_factor - request.negotiated_discount_bps
+        total_margin_bps = max(seg_config["min"], min(seg_config["max"], total_margin_bps))
+
+        margin_breakdown = {
+            "segment_base_bps": seg_config["base"],
+            "tier_adjustment_bps": tier["adj"],
+            "currency_factor_bps": currency_factor,
+            "negotiated_discount_bps": request.negotiated_discount_bps,
+            "rule_applied_id": None,
+            "rule_applied_name": None,
+            "total_before_constraints": seg_config["base"] + tier["adj"] + currency_factor - request.negotiated_discount_bps,
+        }
+
     margin_percent = total_margin_bps / 10000
-    
+
     if request.direction == "SELL":
         customer_rate = mid_rate * (1 - margin_percent)
     else:
         customer_rate = mid_rate * (1 + margin_percent)
-    
+
     target_amount = request.amount * customer_rate
-    
+
     return QuoteResponse(
         quote_id="QT-" + uuid.uuid4().hex[:8].upper(),
         source_currency=request.source_currency,
@@ -169,13 +251,7 @@ async def get_quote(request: QuoteRequest):
         currency_category=cat_name,
         direction=request.direction,
         valid_until=(datetime.utcnow() + timedelta(seconds=30)).isoformat(),
-        margin_breakdown={
-            "segment_base_bps": seg_config["base"],
-            "tier_adjustment_bps": tier["adj"],
-            "currency_factor_bps": currency_factor,
-            "negotiated_discount_bps": request.negotiated_discount_bps,
-            "total_before_constraints": seg_config["base"] + tier["adj"] + currency_factor - request.negotiated_discount_bps,
-        }
+        margin_breakdown=margin_breakdown
     )
 
 @router.get("/margin/{base}/{quote}")

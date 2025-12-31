@@ -1,0 +1,201 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2025-01-01T00:00:00Z",
+  "rules": [
+    {
+      "rule_id": "PROV-001",
+      "rule_name": "Institutional Treasury Internal Routing",
+      "rule_type": "PROVIDER_SELECTION",
+      "priority": 100,
+      "enabled": true,
+      "valid_from": "2025-01-01T00:00:00Z",
+      "valid_until": null,
+      "conditions": {
+        "operator": "AND",
+        "criteria": [
+          {
+            "field": "customer_segment",
+            "operator": "IN",
+            "values": ["INSTITUTIONAL", "LARGE_CORPORATE"]
+          },
+          {
+            "field": "currency_pair",
+            "operator": "IN",
+            "values": ["USDINR", "EURINR", "GBPINR"]
+          },
+          {
+            "field": "amount",
+            "operator": "GREATER_THAN_OR_EQUAL",
+            "value": 5000000
+          }
+        ]
+      },
+      "actions": {
+        "provider_selection": {
+          "preferred_providers": ["TREASURY_INTERNAL"],
+          "excluded_providers": [],
+          "routing_objective_override": "BEST_RATE",
+          "force_provider": false
+        }
+      },
+      "metadata": {
+        "created_by": "treasury_admin",
+        "created_at": "2025-01-01T00:00:00Z",
+        "description": "Route large institutional INR deals to internal treasury for best rates",
+        "tags": ["institutional", "inr", "treasury", "large-value"]
+      }
+    },
+    {
+      "rule_id": "PROV-002",
+      "rule_name": "Retail Fintech Preference",
+      "rule_type": "PROVIDER_SELECTION",
+      "priority": 30,
+      "enabled": true,
+      "valid_from": "2025-01-01T00:00:00Z",
+      "valid_until": null,
+      "conditions": {
+        "operator": "AND",
+        "criteria": [
+          {
+            "field": "customer_segment",
+            "operator": "EQUALS",
+            "value": "RETAIL"
+          },
+          {
+            "field": "amount",
+            "operator": "LESS_THAN",
+            "value": 50000
+          }
+        ]
+      },
+      "actions": {
+        "provider_selection": {
+          "preferred_providers": ["WISE", "TREASURY_INTERNAL"],
+          "excluded_providers": ["BANK_OF_AMERICA", "CITI"],
+          "routing_objective_override": "OPTIMUM",
+          "force_provider": false
+        }
+      },
+      "metadata": {
+        "created_by": "operations_manager",
+        "created_at": "2025-01-01T00:00:00Z",
+        "description": "Use fintech providers for small retail transactions to reduce costs",
+        "tags": ["retail", "fintech", "small-value"]
+      }
+    },
+    {
+      "rule_id": "PROV-003",
+      "rule_name": "Exotic Currency Specialist Routing",
+      "rule_type": "PROVIDER_SELECTION",
+      "priority": 70,
+      "enabled": true,
+      "valid_from": "2025-01-01T00:00:00Z",
+      "valid_until": null,
+      "conditions": {
+        "operator": "AND",
+        "criteria": [
+          {
+            "field": "currency_category",
+            "operator": "IN",
+            "values": ["EXOTIC", "RESTRICTED"]
+          },
+          {
+            "field": "amount",
+            "operator": "GREATER_THAN",
+            "value": 100000
+          }
+        ]
+      },
+      "actions": {
+        "provider_selection": {
+          "preferred_providers": ["HDFC_BANK", "ICICI_BANK", "CITI"],
+          "excluded_providers": ["WISE"],
+          "routing_objective_override": "OPTIMUM",
+          "force_provider": false
+        }
+      },
+      "metadata": {
+        "created_by": "fx_head",
+        "created_at": "2025-01-01T00:00:00Z",
+        "description": "Route exotic/restricted currencies to specialist banks with deep liquidity",
+        "tags": ["exotic", "specialist", "liquidity"]
+      }
+    },
+    {
+      "rule_id": "PROV-004",
+      "rule_name": "G10 High Speed Execution",
+      "rule_type": "PROVIDER_SELECTION",
+      "priority": 50,
+      "enabled": true,
+      "valid_from": "2025-01-01T00:00:00Z",
+      "valid_until": null,
+      "conditions": {
+        "operator": "AND",
+        "criteria": [
+          {
+            "field": "currency_category",
+            "operator": "EQUALS",
+            "value": "G10"
+          },
+          {
+            "field": "amount",
+            "operator": "BETWEEN",
+            "values": [1000000, 10000000]
+          }
+        ]
+      },
+      "actions": {
+        "provider_selection": {
+          "preferred_providers": ["REFINITIV", "TREASURY_INTERNAL", "BANK_OF_AMERICA"],
+          "excluded_providers": [],
+          "routing_objective_override": "FASTEST_EXECUTION",
+          "force_provider": false
+        }
+      },
+      "metadata": {
+        "created_by": "trading_desk",
+        "created_at": "2025-01-01T00:00:00Z",
+        "description": "Use fastest providers for mid-size G10 trades requiring quick execution",
+        "tags": ["g10", "speed", "mid-market"]
+      }
+    },
+    {
+      "rule_id": "PROV-005",
+      "rule_name": "Mumbai Office Domestic Banks",
+      "rule_type": "PROVIDER_SELECTION",
+      "priority": 60,
+      "enabled": true,
+      "valid_from": "2025-01-01T00:00:00Z",
+      "valid_until": null,
+      "conditions": {
+        "operator": "AND",
+        "criteria": [
+          {
+            "field": "office",
+            "operator": "EQUALS",
+            "value": "MUMBAI"
+          },
+          {
+            "field": "currency_pair",
+            "operator": "ENDS_WITH",
+            "value": "INR"
+          }
+        ]
+      },
+      "actions": {
+        "provider_selection": {
+          "preferred_providers": ["HDFC_BANK", "ICICI_BANK", "TREASURY_INTERNAL"],
+          "excluded_providers": [],
+          "routing_objective_override": null,
+          "force_provider": false
+        }
+      },
+      "metadata": {
+        "created_by": "mumbai_ops",
+        "created_at": "2025-01-01T00:00:00Z",
+        "description": "Route Mumbai office INR trades to domestic Indian banks for better settlement",
+        "tags": ["mumbai", "inr", "domestic", "settlement"]
+      }
+    }
+  ]
+}
