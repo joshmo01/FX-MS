@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "last_updated": "2025-12-31T19:19:28.323668Z",
+  "last_updated": "2026-01-01T07:52:41.013929Z",
   "rules": [
     {
       "rule_id": "PRICE-001",
@@ -202,7 +202,7 @@
       "rule_name": "Large Corporate Volume Discount",
       "rule_type": "MARGIN_ADJUSTMENT",
       "priority": 70,
-      "enabled": true,
+      "enabled": false,
       "valid_from": "2025-01-01T00:00:00Z",
       "valid_until": null,
       "conditions": {
@@ -211,11 +211,13 @@
           {
             "field": "customer_segment",
             "operator": "EQUALS",
-            "value": "LARGE_CORPORATE"
+            "value": "LARGE_CORPORATE",
+            "values": null
           },
           {
             "field": "amount_tier",
             "operator": "IN",
+            "value": null,
             "values": [
               "TIER_5",
               "TIER_6"
@@ -224,17 +226,19 @@
         ]
       },
       "actions": {
+        "provider_selection": null,
         "margin_adjustment": {
           "base_margin_override": null,
-          "additional_margin_bps": -5,
+          "additional_margin_bps": -5.0,
           "tier_adjustment_multiplier": 1.0,
-          "min_margin_bps": 10,
-          "max_margin_bps": 50
+          "min_margin_bps": 10.0,
+          "max_margin_bps": 50.0
         }
       },
       "metadata": {
         "created_by": "corporate_banking",
         "created_at": "2025-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T07:52:41.013218Z",
         "description": "Additional volume discount for large corporate clients in top tiers",
         "tags": [
           "corporate",
