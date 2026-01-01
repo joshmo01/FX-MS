@@ -370,5 +370,48 @@
       "status": "EXPIRED"
     },
     "details": "Deal expired automatically"
+  },
+  {
+    "log_id": "LOG-BBB3953C",
+    "deal_id": "DEAL-20251222-0003",
+    "action": "SUBMITTED",
+    "actor": "treasury_user",
+    "timestamp": "2025-12-31T19:36:41.802285",
+    "old_values": {
+      "status": "DRAFT"
+    },
+    "new_values": {
+      "status": "PENDING_APPROVAL"
+    },
+    "details": "Deal submitted for approval"
+  },
+  {
+    "log_id": "LOG-B53ECE1B",
+    "deal_id": "DEAL-20251222-0003",
+    "action": "APPROVED",
+    "actor": "senior_treasury",
+    "timestamp": "2025-12-31T19:36:43.435679",
+    "old_values": {
+      "status": "PENDING_APPROVAL"
+    },
+    "new_values": {
+      "status": "ACTIVE",
+      "approved_by": "senior_treasury"
+    },
+    "details": "Deal approved"
+  },
+  {
+    "log_id": "LOG-C3B7FCB0",
+    "deal_id": "DEAL-20251222-0003",
+    "action": "EXPIRED",
+    "actor": "SYSTEM",
+    "timestamp": "2025-12-31T19:36:43.438422",
+    "old_values": {
+      "status": "ACTIVE"
+    },
+    "new_values": {
+      "status": "EXPIRED"
+    },
+    "details": "Deal expired automatically"
   }
 ]
