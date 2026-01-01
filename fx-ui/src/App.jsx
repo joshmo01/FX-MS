@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import * as api from './services/api';
+import FXRulesManager from './components/FXRulesManager';
 
 const StatusBadge = ({ status }) => {
   const colors = {
@@ -68,12 +69,20 @@ function App() {
     segment: 'MID_MARKET',
     direction: 'SELL',
     customer_id: 'CUST-001',
+    office: '',
+    region: '',
+    customer_tier: '',
   });
   const [pricingResult, setPricingResult] = useState(null);
   const [pricingLoading, setPricingLoading] = useState(false);
   const [pricingError, setPricingError] = useState(null);
   const [segments, setSegments] = useState([]);
   const [tiers, setTiers] = useState([]);
+
+  // Rules state
+  const [rules, setRules] = useState([]);
+  const [showRuleCreate, setShowRuleCreate] = useState(false);
+  const [ruleFilter, setRuleFilter] = useState('ALL'); // ALL, PROVIDER_SELECTION, MARGIN_ADJUSTMENT
 
   useEffect(() => { fetchData(); }, []);
 
@@ -104,6 +113,13 @@ function App() {
         const tierData = await tierRes.json();
         setTiers(tierData || []);
       } catch (e) { console.log('Tiers fetch error:', e); }
+
+      // Fetch rules
+      try {
+        const rulesRes = await fetch('http://127.0.0.1:8000/api/v1/fx/rules/');
+        const rulesData = await rulesRes.json();
+        setRules(rulesData || []);
+      } catch (e) { console.log('Rules fetch error:', e); }
 
     } catch (e) {
       console.error('Fetch error:', e);
@@ -373,17 +389,25 @@ function App() {
     setPricingLoading(true);
     setPricingError(null);
     try {
+      // Build request body with optional fields
+      const requestBody = {
+        source_currency: pricingForm.source_currency,
+        target_currency: pricingForm.target_currency,
+        amount: parseFloat(pricingForm.amount),
+        customer_id: pricingForm.customer_id,
+        segment: pricingForm.segment,
+        direction: pricingForm.direction,
+      };
+
+      // Add optional fields if they have values
+      if (pricingForm.office) requestBody.office = pricingForm.office;
+      if (pricingForm.region) requestBody.region = pricingForm.region;
+      if (pricingForm.customer_tier) requestBody.customer_tier = pricingForm.customer_tier;
+
       const response = await fetch('http://127.0.0.1:8000/api/v1/fx/pricing/quote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          source_currency: pricingForm.source_currency,
-          target_currency: pricingForm.target_currency,
-          amount: parseFloat(pricingForm.amount),
-          customer_id: pricingForm.customer_id,
-          segment: pricingForm.segment,
-          direction: pricingForm.direction,
-        }),
+        body: JSON.stringify(requestBody),
       });
       
       if (!response.ok) {
@@ -447,6 +471,29 @@ function App() {
     setTab('pricing');
   };
 
+  const handleToggleRule = async (ruleId) => {
+    try {
+      await fetch(`http://127.0.0.1:8000/api/v1/fx/rules/${ruleId}/toggle`, {
+        method: 'POST',
+      });
+      fetchData(); // Refresh rules
+    } catch (e) {
+      alert('Error toggling rule: ' + e.message);
+    }
+  };
+
+  const handleDeleteRule = async (ruleId) => {
+    if (!confirm(`Are you sure you want to delete rule ${ruleId}?`)) return;
+    try {
+      await fetch(`http://127.0.0.1:8000/api/v1/fx/rules/${ruleId}`, {
+        method: 'DELETE',
+      });
+      fetchData(); // Refresh rules
+    } catch (e) {
+      alert('Error deleting rule: ' + e.message);
+    }
+  };
+
   const activeDeals = deals.filter(d => d.status === 'ACTIVE').length;
   const pendingDeals = deals.filter(d => d.status === 'PENDING_APPROVAL').length;
 
@@ -465,7 +512,7 @@ function App() {
             <h1 className="text-xl font-bold">FX Smart Routing</h1>
           </div>
           <nav className="flex gap-2">
-            {['dashboard', 'deals', 'rates', 'routes', 'pricing'].map(t => (
+            {['dashboard', 'deals', 'rates', 'routes', 'pricing', 'rules'].map(t => (
               <button key={t} onClick={() => setTab(t)}
                 className={`px-4 py-2 rounded-lg font-medium ${tab === t ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}>
                 {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -1086,6 +1133,42 @@ function App() {
                           <input type="text" value={pricingForm.customer_id} onChange={e => setPricingForm({...pricingForm, customer_id: e.target.value})} className="w-full border rounded-lg px-3 py-2" />
                         </div>
 
+                        {/* Additional Rule Parameters */}
+                        <div className="border-t pt-4 mt-2">
+                          <p className="text-xs text-gray-500 mb-3">⚙️ Optional: Additional parameters for rule matching</p>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700 mb-1">Office</label>
+                              <select value={pricingForm.office} onChange={e => setPricingForm({...pricingForm, office: e.target.value})} className="w-full border rounded-lg px-3 py-2 text-sm">
+                                <option value="">None</option>
+                                <option value="MUMBAI">Mumbai</option>
+                                <option value="LONDON">London</option>
+                                <option value="NEW_YORK">New York</option>
+                                <option value="SINGAPORE">Singapore</option>
+                                <option value="HONG_KONG">Hong Kong</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700 mb-1">Region</label>
+                              <select value={pricingForm.region} onChange={e => setPricingForm({...pricingForm, region: e.target.value})} className="w-full border rounded-lg px-3 py-2 text-sm">
+                                <option value="">None</option>
+                                <option value="APAC">APAC</option>
+                                <option value="EMEA">EMEA</option>
+                                <option value="AMERICAS">Americas</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          <div className="mt-3">
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Customer Tier</label>
+                            <select value={pricingForm.customer_tier} onChange={e => setPricingForm({...pricingForm, customer_tier: e.target.value})} className="w-full border rounded-lg px-3 py-2 text-sm">
+                              <option value="">None</option>
+                              {customerTiers.map(tier => (<option key={tier} value={tier}>{tier}</option>))}
+                            </select>
+                          </div>
+                        </div>
+
                         <button onClick={calculatePricing} disabled={pricingLoading} className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 flex items-center justify-center gap-2 font-medium">
                           {pricingLoading ? (<><div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>Getting Quote...</>) : (<>Get Quote</>)}
                         </button>
@@ -1146,14 +1229,68 @@ function App() {
                           </div>
                         </div>
 
+                        {/* Rule Applied Badge */}
+                        {pricingResult.margin_breakdown?.rule_applied_id && (
+                          <div className="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg p-4 text-white mb-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-xl">⚙️</span>
+                              <div>
+                                <p className="text-sm opacity-80">Rule Applied</p>
+                                <p className="font-bold">{pricingResult.margin_breakdown.rule_applied_name}</p>
+                              </div>
+                            </div>
+                            <p className="text-xs opacity-80 font-mono">{pricingResult.margin_breakdown.rule_applied_id}</p>
+                          </div>
+                        )}
+
                         {/* Margin Breakdown */}
                         <div className="border-t pt-4">
                           <h4 className="font-medium mb-3">💹 Margin Breakdown</h4>
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between"><span className="text-gray-500">Mid-Market Rate</span><span className="font-mono">{pricingResult.mid_rate?.toFixed(4)}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">Segment Base</span><span className="font-mono text-red-600">+{pricingResult.margin_breakdown?.segment_base_bps} bps</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">Tier Adjustment</span><span className={`font-mono ${pricingResult.margin_breakdown?.tier_adjustment_bps < 0 ? 'text-green-600' : 'text-red-600'}`}>{pricingResult.margin_breakdown?.tier_adjustment_bps >= 0 ? '+' : ''}{pricingResult.margin_breakdown?.tier_adjustment_bps} bps</span></div>
+
+                            {/* Show rule base override if present */}
+                            {pricingResult.margin_breakdown?.rule_base_override_bps !== null && pricingResult.margin_breakdown?.rule_base_override_bps !== undefined ? (
+                              <div className="flex justify-between bg-purple-50 px-2 py-1 rounded">
+                                <span className="text-gray-700">Segment Base (Rule Override)</span>
+                                <span className="font-mono text-purple-700">+{pricingResult.margin_breakdown.rule_base_override_bps} bps</span>
+                              </div>
+                            ) : (
+                              <div className="flex justify-between"><span className="text-gray-500">Segment Base</span><span className="font-mono text-red-600">+{pricingResult.margin_breakdown?.segment_base_bps} bps</span></div>
+                            )}
+
+                            {/* Show tier adjustment with multiplier note if present */}
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">
+                                Tier Adjustment
+                                {pricingResult.margin_breakdown?.rule_tier_multiplier && pricingResult.margin_breakdown.rule_tier_multiplier !== 1.0 && (
+                                  <span className="text-purple-600 text-xs ml-1">(×{pricingResult.margin_breakdown.rule_tier_multiplier})</span>
+                                )}
+                              </span>
+                              <span className={`font-mono ${pricingResult.margin_breakdown?.tier_adjustment_bps < 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {pricingResult.margin_breakdown?.tier_adjustment_bps >= 0 ? '+' : ''}{pricingResult.margin_breakdown?.tier_adjustment_bps} bps
+                              </span>
+                            </div>
+
                             <div className="flex justify-between"><span className="text-gray-500">Currency Factor</span><span className="font-mono text-red-600">+{pricingResult.margin_breakdown?.currency_factor_bps} bps</span></div>
+
+                            {/* Show rule additional margin if present */}
+                            {pricingResult.margin_breakdown?.rule_additional_margin_bps && pricingResult.margin_breakdown.rule_additional_margin_bps !== 0 && (
+                              <div className="flex justify-between bg-purple-50 px-2 py-1 rounded">
+                                <span className="text-gray-700">Rule Additional Margin</span>
+                                <span className={`font-mono ${pricingResult.margin_breakdown.rule_additional_margin_bps < 0 ? 'text-green-600' : 'text-purple-700'}`}>
+                                  {pricingResult.margin_breakdown.rule_additional_margin_bps >= 0 ? '+' : ''}{pricingResult.margin_breakdown.rule_additional_margin_bps} bps
+                                </span>
+                              </div>
+                            )}
+
+                            {pricingResult.margin_breakdown?.negotiated_discount_bps > 0 && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">Negotiated Discount</span>
+                                <span className="font-mono text-green-600">-{pricingResult.margin_breakdown.negotiated_discount_bps} bps</span>
+                              </div>
+                            )}
+
                             <div className="flex justify-between font-medium border-t pt-2 mt-2"><span>Total Margin</span><span className="text-green-600">{pricingResult.margin_bps} bps ({pricingResult.margin_percent?.toFixed(2)}%)</span></div>
                           </div>
                         </div>
@@ -1330,6 +1467,11 @@ function App() {
                   </div>
                 )}
               </div>
+            )}
+
+            {/* RULES TAB */}
+            {tab === "rules" && (
+              <FXRulesManager />
             )}
           </>
         )}
