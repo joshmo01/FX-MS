@@ -12,6 +12,9 @@ router = APIRouter(prefix="/api/v1/fx", tags=["chat"])
 
 API_BASE_URL = "http://127.0.0.1:8000"
 
+# Debug: Print tool count on module load
+print(f"[CHAT_API] Module loaded with TOOLS defined. Check TOOLS count after definition.")
+
 class ChatRequest(BaseModel):
     message: str
 
@@ -131,8 +134,34 @@ TOOLS = [
             },
             "required": ["source_currency", "target_currency", "amount"]
         }
+    },
+    {
+        "name": "fx_list_rules",
+        "description": "List configured FX pricing rules and routing rules from the rules engine. These are business rules that control: (1) PROVIDER_SELECTION - which FX providers to use based on currency, amount, customer type (2) MARGIN_ADJUSTMENT - pricing margin adjustments for specific currencies (exotic pairs like USDINR, EURINR), customer segments, or transaction sizes. Use this when user asks about 'rules', 'pricing rules', 'margin rules', 'exotic currency rules', or 'provider rules'.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "rule_type": {"type": "string", "description": "Optional: Filter by type - PROVIDER_SELECTION or MARGIN_ADJUSTMENT"},
+                "enabled": {"type": "boolean", "description": "Optional: Filter by enabled status (true/false)"}
+            },
+            "required": []
+        }
+    },
+    {
+        "name": "fx_get_rule",
+        "description": "Get details of a specific FX rule by its ID (e.g., PROV-001, MARGIN-001)",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "rule_id": {"type": "string", "description": "The rule ID to retrieve"}
+            },
+            "required": ["rule_id"]
+        }
     }
 ]
+
+# Debug: Print TOOLS count
+print(f"[CHAT_API] TOOLS list defined with {len(TOOLS)} tools: {[t['name'] for t in TOOLS]}")
 
 async def call_api(method: str, endpoint: str, params: dict = None, json_data: dict = None) -> dict:
     """Make HTTP request to FastAPI server"""
@@ -224,7 +253,21 @@ async def execute_tool(tool_name: str, tool_input: dict) -> str:
         }
         result = await call_api("POST", "/api/v1/fx/multi-rail/route", params=params)
         return json.dumps(result)
-    
+
+    elif tool_name == "fx_list_rules":
+        params = {}
+        if tool_input.get("rule_type"):
+            params["rule_type"] = tool_input["rule_type"].upper()
+        if tool_input.get("enabled") is not None:
+            params["enabled"] = tool_input["enabled"]
+        result = await call_api("GET", "/api/v1/fx/rules/", params=params)
+        return json.dumps(result)
+
+    elif tool_name == "fx_get_rule":
+        rule_id = tool_input.get("rule_id", "")
+        result = await call_api("GET", f"/api/v1/fx/rules/{rule_id}")
+        return json.dumps(result)
+
     return json.dumps({"error": f"Unknown tool: {tool_name}"})
 
 SYSTEM_PROMPT = """You are an FX Smart Routing Assistant powered by Fintaar.ai.
@@ -235,6 +278,7 @@ You help users with:
 - Treasury deal information and active deals
 - CBDC and stablecoin information
 - Route recommendations for optimal execution
+- Pricing and routing rules that control margins and provider selection
 
 IMPORTANT: Always use the tools to get real data. Do not make up rates or information.
 
@@ -249,6 +293,12 @@ Tool usage guidelines:
 - For stablecoins: use fx_list_stablecoins
 - For segments/tiers: use fx_get_segments or fx_get_tiers
 - For routing: use fx_recommend_route or fx_multi_rail_route
+- For FX rules/business rules queries (NOT your own guidelines):
+  * When user asks about "rules", "pricing rules", "margin rules", "exotic currency rules", "provider rules" → use fx_list_rules
+  * These are configured business rules in the FX system that control pricing and routing
+  * Filter by rule_type: PROVIDER_SELECTION (which providers to use) or MARGIN_ADJUSTMENT (pricing margins for currencies/segments)
+  * Rules apply to exotic currencies (USDINR, EURINR), customer segments, and amount thresholds
+  * Use fx_get_rule with a rule_id (like PROV-001, MARGIN-001) to get specific rule details
 
 Be concise. Format numbers with commas. Show rates to 4 decimal places."""
 
