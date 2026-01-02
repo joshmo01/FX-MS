@@ -9,3 +9,7 @@ path/
 dist/
 build/
 .DS_Store
+
+# Test output
+test_results/
+_ul
