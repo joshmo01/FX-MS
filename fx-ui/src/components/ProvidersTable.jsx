@@ -51,13 +51,19 @@ const ProvidersTable = ({ onUpdate }) => {
       avg_latency_ms: 100,
       markup_bps: 10,
       supported_pairs: [],
-      operating_hours: '24x7'
+      operating_hours: '24x7',
+      _isNew: true,  // Track if this is a new provider
+      _supportedPairsString: ''  // String field for editing supported pairs
     });
     setIsModalOpen(true);
   };
 
   const handleEdit = (provider) => {
-    setEditingProvider({ ...provider });
+    setEditingProvider({
+      ...provider,
+      _isNew: false,
+      _supportedPairsString: (provider.supported_pairs || []).join(', ')  // Convert array to string for editing
+    });
     setIsModalOpen(true);
   };
 
@@ -70,11 +76,21 @@ const ProvidersTable = ({ onUpdate }) => {
 
       const isNew = !providers.find(p => p.provider_id === editingProvider.provider_id);
 
+      // Convert supported pairs string back to array before saving
+      const providerData = {
+        ...editingProvider,
+        supported_pairs: editingProvider._supportedPairsString
+          ? editingProvider._supportedPairsString.split(',').map(s => s.trim()).filter(Boolean)
+          : []
+      };
+      delete providerData._supportedPairsString;  // Remove temp field
+      delete providerData._isNew;  // Remove temp field
+
       if (isNew) {
-        await createAdminResource('fx-providers', editingProvider);
+        await createAdminResource('fx-providers', providerData);
         showNotification('Provider created successfully', 'success');
       } else {
-        await updateAdminResource('fx-providers', editingProvider.provider_id, editingProvider);
+        await updateAdminResource('fx-providers', editingProvider.provider_id, providerData);
         showNotification('Provider updated successfully', 'success');
       }
 
@@ -228,7 +244,7 @@ const ProvidersTable = ({ onUpdate }) => {
                     value={editingProvider.provider_id}
                     onChange={(e) => setEditingProvider({ ...editingProvider, provider_id: e.target.value.toUpperCase() })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    disabled={providers.find(p => p.provider_id === editingProvider.provider_id)}
+                    disabled={!editingProvider._isNew}
                   />
                 </div>
                 <div>
@@ -294,8 +310,8 @@ const ProvidersTable = ({ onUpdate }) => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Supported Pairs (comma-separated)</label>
                 <input
                   type="text"
-                  value={(editingProvider.supported_pairs || []).join(', ')}
-                  onChange={(e) => setEditingProvider({ ...editingProvider, supported_pairs: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                  value={editingProvider._supportedPairsString || ''}
+                  onChange={(e) => setEditingProvider({ ...editingProvider, _supportedPairsString: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   placeholder="USDINR, EURUSD, GBPUSD"
                 />

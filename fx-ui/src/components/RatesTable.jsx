@@ -48,13 +48,14 @@ const RatesTable = ({ onUpdate }) => {
       ask: 0,
       mid: 0,
       min_margin_bps: 10,
-      position: 'NEUTRAL'
+      position: 'NEUTRAL',
+      _isNew: true  // Track if this is a new rate
     });
     setIsModalOpen(true);
   };
 
   const handleEdit = (rate) => {
-    setEditingRate({ ...rate });
+    setEditingRate({ ...rate, _isNew: false });
     setIsModalOpen(true);
   };
 
@@ -65,16 +66,18 @@ const RatesTable = ({ onUpdate }) => {
         return;
       }
 
-      // Auto-calculate mid
-      editingRate.mid = (editingRate.bid + editingRate.ask) / 2;
+      // Remove temporary fields and calculate mid
+      const rateData = { ...editingRate };
+      delete rateData._isNew;
+      rateData.mid = (rateData.bid + rateData.ask) / 2;
 
       const isNew = !rates.find(r => r.pair === editingRate.pair);
 
       if (isNew) {
-        await createAdminResource('treasury-rates', editingRate);
+        await createAdminResource('treasury-rates', rateData);
         showNotification('Rate created successfully', 'success');
       } else {
-        await updateAdminResource('treasury-rates', editingRate.pair, editingRate);
+        await updateAdminResource('treasury-rates', editingRate.pair, rateData);
         showNotification('Rate updated successfully', 'success');
       }
 
@@ -219,7 +222,7 @@ const RatesTable = ({ onUpdate }) => {
                   onChange={(e) => setEditingRate({ ...editingRate, pair: e.target.value.toUpperCase() })}
                   className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   placeholder="USDINR"
-                  disabled={rates.find(r => r.pair === editingRate.pair)}
+                  disabled={!editingRate._isNew}
                 />
               </div>
 
