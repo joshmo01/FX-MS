@@ -6,9 +6,81 @@ from pydantic import BaseModel
 from typing import Optional, Dict, Any
 from decimal import Decimal
 from datetime import datetime, timedelta
+from pathlib import Path
 import uuid
+import json
 
 router = APIRouter(prefix="/api/v1/fx/pricing", tags=["pricing"])
+
+# Module-level variables for config data
+SEGMENTS = {}
+TIERS = []
+
+def _load_pricing_config():
+    """Load pricing configuration from JSON files"""
+    global SEGMENTS, TIERS
+
+    base_dir = Path(".")
+
+    # Load segments
+    segments_file = base_dir / "config" / "pricing_segments.json"
+    try:
+        with open(segments_file, 'r') as f:
+            segments_data = json.load(f)
+            # Convert to old format for backward compatibility
+            SEGMENTS = {}
+            for seg_id, seg_data in segments_data.items():
+                SEGMENTS[seg_id] = {
+                    "base": seg_data["base_margin_bps"],
+                    "min": seg_data["min_margin_bps"],
+                    "max": seg_data["max_margin_bps"],
+                    "vol_disc": seg_data["volume_discount_eligible"],
+                    "neg_rates": seg_data["negotiated_rates_allowed"]
+                }
+    except Exception as e:
+        print(f"Warning: Failed to load pricing segments from JSON: {e}")
+        # Fallback to defaults if file doesn't exist
+        SEGMENTS = {
+            "INSTITUTIONAL": {"base": 5, "min": 2, "max": 20, "vol_disc": True, "neg_rates": True},
+            "LARGE_CORPORATE": {"base": 25, "min": 10, "max": 75, "vol_disc": True, "neg_rates": True},
+            "MID_MARKET": {"base": 75, "min": 40, "max": 150, "vol_disc": True, "neg_rates": False},
+            "SMALL_BUSINESS": {"base": 150, "min": 100, "max": 250, "vol_disc": False, "neg_rates": False},
+            "RETAIL": {"base": 300, "min": 200, "max": 500, "vol_disc": False, "neg_rates": False},
+            "PRIVATE_BANKING": {"base": 50, "min": 20, "max": 100, "vol_disc": True, "neg_rates": True},
+        }
+
+    # Load tiers
+    tiers_file = base_dir / "config" / "pricing_tiers.json"
+    try:
+        with open(tiers_file, 'r') as f:
+            tiers_data = json.load(f)
+            # Convert to old format for backward compatibility
+            TIERS = []
+            for tier_id, tier_data in sorted(tiers_data.items()):
+                TIERS.append({
+                    "id": tier_data["tier_id"],
+                    "min": tier_data["min_amount"],
+                    "max": tier_data["max_amount"],
+                    "adj": tier_data["adjustment_bps"]
+                })
+    except Exception as e:
+        print(f"Warning: Failed to load pricing tiers from JSON: {e}")
+        # Fallback to defaults
+        TIERS = [
+            {"id": "TIER_1", "min": 0, "max": 10000, "adj": 50},
+            {"id": "TIER_2", "min": 10000, "max": 50000, "adj": 25},
+            {"id": "TIER_3", "min": 50000, "max": 100000, "adj": 0},
+            {"id": "TIER_4", "min": 100000, "max": 500000, "adj": -15},
+            {"id": "TIER_5", "min": 500000, "max": 1000000, "adj": -25},
+            {"id": "TIER_6", "min": 1000000, "max": None, "adj": -40},
+        ]
+
+def reload_pricing_config():
+    """Reload pricing configuration from files"""
+    _load_pricing_config()
+
+# Load config on module import
+_load_pricing_config()
 
 class QuoteRequest(BaseModel):
     source_currency: str
@@ -41,23 +113,7 @@ class QuoteResponse(BaseModel):
     valid_until: str
     margin_breakdown: dict
 
-SEGMENTS = {
-    "INSTITUTIONAL": {"base": 5, "min": 2, "max": 20, "vol_disc": True, "neg_rates": True},
-    "LARGE_CORPORATE": {"base": 25, "min": 10, "max": 75, "vol_disc": True, "neg_rates": True},
-    "MID_MARKET": {"base": 75, "min": 40, "max": 150, "vol_disc": True, "neg_rates": False},
-    "SMALL_BUSINESS": {"base": 150, "min": 100, "max": 250, "vol_disc": False, "neg_rates": False},
-    "RETAIL": {"base": 300, "min": 200, "max": 500, "vol_disc": False, "neg_rates": False},
-    "PRIVATE_BANKING": {"base": 50, "min": 20, "max": 100, "vol_disc": True, "neg_rates": True},
-}
-
-TIERS = [
-    {"id": "TIER_1", "min": 0, "max": 10000, "adj": 50},
-    {"id": "TIER_2", "min": 10000, "max": 50000, "adj": 25},
-    {"id": "TIER_3", "min": 50000, "max": 100000, "adj": 0},
-    {"id": "TIER_4", "min": 100000, "max": 500000, "adj": -15},
-    {"id": "TIER_5", "min": 500000, "max": 1000000, "adj": -25},
-    {"id": "TIER_6", "min": 1000000, "max": None, "adj": -40},
-]
+# SEGMENTS and TIERS are now loaded from JSON files (see _load_pricing_config above)
 
 CURRENCY_CATEGORIES = {
     "G10": {"currencies": ["USD", "EUR", "JPY", "GBP", "CHF", "AUD", "NZD", "CAD", "SEK", "NOK"], "retail": 50, "corp": 15, "inst": 2},

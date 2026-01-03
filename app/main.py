@@ -12,6 +12,7 @@ from app.api.multi_rail_api import router as multi_rail_router
 from app.api.deals_api import router as deals_router
 from app.api.chat_api import router as chat_router
 from app.api.rules_api import router as rules_router
+from app.api.admin_api import router as admin_router
 
 app = FastAPI(
     title="FX Smart Routing Engine",
@@ -33,6 +34,7 @@ app.include_router(deals_router)
 app.include_router(chat_router)
 app.include_router(pricing_router)
 app.include_router(rules_router)
+app.include_router(admin_router)
 
 @app.get("/")
 async def root():

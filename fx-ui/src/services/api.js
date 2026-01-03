@@ -55,4 +55,13 @@ export const getTiers = () => API.get('/api/v1/fx/pricing/tiers');
 // Chat API
 export const sendChatMessage = (message) => API.post('/api/v1/fx/chat', { message });
 
+// Admin APIs for reference tables
+export const listAdminResources = () => API.get('/api/v1/fx/admin/resources');
+export const getAdminResource = (resourceType) => API.get(`/api/v1/fx/admin/${resourceType}`);
+export const getAdminResourceItem = (resourceType, itemId) => API.get(`/api/v1/fx/admin/${resourceType}/${itemId}`);
+export const createAdminResource = (resourceType, data) => API.post(`/api/v1/fx/admin/${resourceType}`, data);
+export const updateAdminResource = (resourceType, itemId, data) => API.put(`/api/v1/fx/admin/${resourceType}/${itemId}`, data);
+export const deleteAdminResource = (resourceType, itemId) => API.delete(`/api/v1/fx/admin/${resourceType}/${itemId}`);
+export const reloadAdminResource = (resourceType) => API.post(`/api/v1/fx/admin/${resourceType}/reload`);
+
 export default API;

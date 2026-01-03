@@ -16,7 +16,14 @@ class SmartRoutingEngine:
                 return json.load(f)
         except FileNotFoundError:
             return {}
-    
+
+    def reload_config(self):
+        """Reload all configuration files"""
+        self.treasury_rates = self._load_config("treasury_rates.json")
+        self.customer_tiers = self._load_config("customer_tiers.json")
+        self.fx_providers = self._load_config("fx_providers.json")
+        print("SmartRoutingEngine: Configuration reloaded successfully")
+
     def get_treasury_rate(self, pair: str) -> Optional[dict]:
         return self.treasury_rates.get("rates", {}).get(pair.upper())
     
