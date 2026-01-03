@@ -98,7 +98,7 @@ function App() {
       ]);
 
       setDeals(dealsRes.data?.deals || []);
-      setRates(ratesRes.data?.rates || {});
+      setRates(ratesRes.data || {});
       setCbdcs(cbdcRes.data?.cbdc || []);
       setStablecoins(stableRes.data?.stablecoins || []);
 
