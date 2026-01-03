@@ -104,22 +104,19 @@ function App() {
 
       // Fetch pricing data
       try {
-        const segRes = await fetch('http://127.0.0.1:8000/api/v1/fx/pricing/segments');
-        const segData = await segRes.json();
-        setSegments(segData || []);
+        const segRes = await api.getSegments();
+        setSegments(segRes.data || []);
       } catch (e) { console.log('Segments fetch error:', e); }
 
       try {
-        const tierRes = await fetch('http://127.0.0.1:8000/api/v1/fx/pricing/tiers');
-        const tierData = await tierRes.json();
-        setTiers(tierData || []);
+        const tierRes = await api.getTiers();
+        setTiers(tierRes.data || []);
       } catch (e) { console.log('Tiers fetch error:', e); }
 
       // Fetch rules
       try {
-        const rulesRes = await fetch('http://127.0.0.1:8000/api/v1/fx/rules/');
-        const rulesData = await rulesRes.json();
-        setRules(rulesData || []);
+        const rulesRes = await api.getRules();
+        setRules(rulesRes.data || []);
       } catch (e) { console.log('Rules fetch error:', e); }
 
     } catch (e) {
@@ -405,18 +402,8 @@ function App() {
       if (pricingForm.region) requestBody.region = pricingForm.region;
       if (pricingForm.customer_tier) requestBody.customer_tier = pricingForm.customer_tier;
 
-      const response = await fetch('http://127.0.0.1:8000/api/v1/fx/pricing/quote', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      setPricingResult(data);
+      const response = await api.getPricingQuote(requestBody);
+      setPricingResult(response.data);
     } catch (e) {
       console.error('Pricing error:', e);
       setPricingError(e.message);
@@ -430,13 +417,8 @@ function App() {
     setChatMessages(m => [...m, { role: 'user', content: msg }]);
     setChatInput('');
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/v1/fx/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: msg }),
-      });
-      const data = await res.json();
-      setChatMessages(m => [...m, { role: 'assistant', content: data.response || data.detail || 'Error' }]);
+      const res = await api.sendChatMessage(msg);
+      setChatMessages(m => [...m, { role: 'assistant', content: res.data.response || res.data.detail || 'Error' }]);
     } catch (e) {
       setChatMessages(m => [...m, { role: 'assistant', content: 'Chat API not available. Make sure ANTHROPIC_API_KEY is set.' }]);
     }
@@ -474,9 +456,7 @@ function App() {
 
   const handleToggleRule = async (ruleId) => {
     try {
-      await fetch(`http://127.0.0.1:8000/api/v1/fx/rules/${ruleId}/toggle`, {
-        method: 'POST',
-      });
+      await api.toggleRule(ruleId);
       fetchData(); // Refresh rules
     } catch (e) {
       alert('Error toggling rule: ' + e.message);
@@ -486,9 +466,7 @@ function App() {
   const handleDeleteRule = async (ruleId) => {
     if (!confirm(`Are you sure you want to delete rule ${ruleId}?`)) return;
     try {
-      await fetch(`http://127.0.0.1:8000/api/v1/fx/rules/${ruleId}`, {
-        method: 'DELETE',
-      });
+      await api.deleteRule(ruleId);
       fetchData(); // Refresh rules
     } catch (e) {
       alert('Error deleting rule: ' + e.message);
