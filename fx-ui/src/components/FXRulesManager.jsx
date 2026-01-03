@@ -18,7 +18,7 @@ const PROVIDERS = [
 
 const ROUTING_OBJECTIVES = ['BEST_RATE', 'FASTEST_EXECUTION', 'OPTIMUM', 'LOWEST_COST'];
 
-const API_BASE = 'http://127.0.0.1:8000/api/v1/fx/rules';
+const API_BASE = `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}/api/v1/fx/rules`;
 
 export default function FXRulesManager() {
   const [rules, setRules] = useState([]);
