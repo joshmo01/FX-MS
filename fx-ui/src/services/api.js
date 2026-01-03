@@ -55,6 +55,11 @@ export const getTiers = () => API.get('/api/v1/fx/pricing/tiers');
 // Chat API
 export const sendChatMessage = (message) => API.post('/api/v1/fx/chat', { message });
 
+// Rules APIs
+export const getRules = () => API.get('/api/v1/fx/rules/');
+export const toggleRule = (ruleId) => API.post(`/api/v1/fx/rules/${ruleId}/toggle`);
+export const deleteRule = (ruleId) => API.delete(`/api/v1/fx/rules/${ruleId}`);
+
 // Admin APIs for reference tables
 export const listAdminResources = () => API.get('/api/v1/fx/admin/resources');
 export const getAdminResource = (resourceType) => API.get(`/api/v1/fx/admin/${resourceType}`);
