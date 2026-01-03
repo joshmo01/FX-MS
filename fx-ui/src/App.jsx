@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import * as api from './services/api';
 import FXRulesManager from './components/FXRulesManager';
+import AdminPanel from './components/AdminPanel';
 
 const StatusBadge = ({ status }) => {
   const colors = {
@@ -512,7 +513,7 @@ function App() {
             <h1 className="text-xl font-bold">FX Smart Routing</h1>
           </div>
           <nav className="flex gap-2">
-            {['dashboard', 'deals', 'rates', 'routes', 'pricing', 'rules'].map(t => (
+            {['dashboard', 'deals', 'rates', 'routes', 'pricing', 'rules', 'admin'].map(t => (
               <button key={t} onClick={() => setTab(t)}
                 className={`px-4 py-2 rounded-lg font-medium ${tab === t ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}>
                 {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -1472,6 +1473,11 @@ function App() {
             {/* RULES TAB */}
             {tab === "rules" && (
               <FXRulesManager />
+            )}
+
+            {/* ADMIN TAB */}
+            {tab === "admin" && (
+              <AdminPanel />
             )}
           </>
         )}

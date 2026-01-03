@@ -1,0 +1,50 @@
+{
+  "INSTITUTIONAL": {
+    "segment_id": "INSTITUTIONAL",
+    "base_margin_bps": 5,
+    "min_margin_bps": 2,
+    "max_margin_bps": 20,
+    "volume_discount_eligible": true,
+    "negotiated_rates_allowed": true
+  },
+  "LARGE_CORPORATE": {
+    "segment_id": "LARGE_CORPORATE",
+    "base_margin_bps": 25,
+    "min_margin_bps": 10,
+    "max_margin_bps": 75,
+    "volume_discount_eligible": true,
+    "negotiated_rates_allowed": true
+  },
+  "MID_MARKET": {
+    "segment_id": "MID_MARKET",
+    "base_margin_bps": 75,
+    "min_margin_bps": 40,
+    "max_margin_bps": 150,
+    "volume_discount_eligible": true,
+    "negotiated_rates_allowed": false
+  },
+  "SMALL_BUSINESS": {
+    "segment_id": "SMALL_BUSINESS",
+    "base_margin_bps": 150,
+    "min_margin_bps": 100,
+    "max_margin_bps": 250,
+    "volume_discount_eligible": false,
+    "negotiated_rates_allowed": false
+  },
+  "RETAIL": {
+    "segment_id": "RETAIL",
+    "base_margin_bps": 300,
+    "min_margin_bps": 200,
+    "max_margin_bps": 500,
+    "volume_discount_eligible": false,
+    "negotiated_rates_allowed": false
+  },
+  "PRIVATE_BANKING": {
+    "segment_id": "PRIVATE_BANKING",
+    "base_margin_bps": 50,
+    "min_margin_bps": 20,
+    "max_margin_bps": 100,
+    "volume_discount_eligible": true,
+    "negotiated_rates_allowed": true
+  }
+}
