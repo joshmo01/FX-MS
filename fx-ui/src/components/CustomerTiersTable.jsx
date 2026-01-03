@@ -50,13 +50,14 @@ const CustomerTiersTable = ({ onUpdate }) => {
       priority_routing: false,
       dedicated_treasury: false,
       max_transaction_usd: 1000000,
-      stp_threshold_usd: 100000
+      stp_threshold_usd: 100000,
+      _isNew: true  // Track if this is a new tier
     });
     setIsModalOpen(true);
   };
 
   const handleEdit = (tier) => {
-    setEditingTier({ ...tier });
+    setEditingTier({ ...tier, _isNew: false });
     setIsModalOpen(true);
   };
 
@@ -69,11 +70,15 @@ const CustomerTiersTable = ({ onUpdate }) => {
 
       const isNew = !tiers.find(t => t.tier_id === editingTier.tier_id);
 
+      // Remove temporary fields before saving
+      const tierData = { ...editingTier };
+      delete tierData._isNew;
+
       if (isNew) {
-        await createAdminResource('customer-tiers', editingTier);
+        await createAdminResource('customer-tiers', tierData);
         showNotification('Customer tier created successfully', 'success');
       } else {
-        await updateAdminResource('customer-tiers', editingTier.tier_id, editingTier);
+        await updateAdminResource('customer-tiers', editingTier.tier_id, tierData);
         showNotification('Customer tier updated successfully', 'success');
       }
 
@@ -246,7 +251,7 @@ const CustomerTiersTable = ({ onUpdate }) => {
                     onChange={(e) => setEditingTier({ ...editingTier, tier_id: e.target.value.toUpperCase() })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     placeholder="PLATINUM"
-                    disabled={tiers.find(t => t.tier_id === editingTier.tier_id)}
+                    disabled={!editingTier._isNew}
                   />
                 </div>
                 <div>

@@ -45,7 +45,8 @@ const PricingTable = ({ onUpdate }) => {
         min_margin_bps: 20,
         max_margin_bps: 100,
         volume_discount_eligible: true,
-        negotiated_rates_allowed: false
+        negotiated_rates_allowed: false,
+        _isNew: true  // Track if this is a new segment
       });
     } else {
       setEditingItem({
@@ -53,14 +54,15 @@ const PricingTable = ({ onUpdate }) => {
         min_amount: 0,
         max_amount: null,
         adjustment_bps: 0,
-        description: ''
+        description: '',
+        _isNew: true  // Track if this is a new tier
       });
     }
     setIsModalOpen(true);
   };
 
   const handleEdit = (item) => {
-    setEditingItem({ ...item });
+    setEditingItem({ ...item, _isNew: false });
     setIsModalOpen(true);
   };
 
@@ -78,11 +80,15 @@ const PricingTable = ({ onUpdate }) => {
       const currentData = getCurrentData();
       const isNew = !currentData.find(item => item[idField] === itemId);
 
+      // Remove temporary fields before saving
+      const itemData = { ...editingItem };
+      delete itemData._isNew;
+
       if (isNew) {
-        await createAdminResource(resource, editingItem);
+        await createAdminResource(resource, itemData);
         showNotification(`${activeSubTab === 'segments' ? 'Segment' : 'Tier'} created successfully`, 'success');
       } else {
-        await updateAdminResource(resource, itemId, editingItem);
+        await updateAdminResource(resource, itemId, itemData);
         showNotification(`${activeSubTab === 'segments' ? 'Segment' : 'Tier'} updated successfully`, 'success');
       }
 
@@ -270,7 +276,7 @@ const PricingTable = ({ onUpdate }) => {
                       value={editingItem.segment_id}
                       onChange={(e) => setEditingItem({ ...editingItem, segment_id: e.target.value.toUpperCase() })}
                       className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                      disabled={segments.find(s => s.segment_id === editingItem.segment_id)}
+                      disabled={!editingItem._isNew}
                     />
                   </div>
                   <div className="grid grid-cols-3 gap-4">
@@ -332,7 +338,7 @@ const PricingTable = ({ onUpdate }) => {
                       value={editingItem.tier_id}
                       onChange={(e) => setEditingItem({ ...editingItem, tier_id: e.target.value.toUpperCase() })}
                       className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                      disabled={tiers.find(t => t.tier_id === editingItem.tier_id)}
+                      disabled={!editingItem._isNew}
                     />
                   </div>
                   <div className="grid grid-cols-3 gap-4">
