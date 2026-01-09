@@ -1,133 +1,62 @@
 """
-FX Currency Conversion Microservice
-
-Main application entry point for the FastAPI service.
+FX Smart Routing Engine v2.1.0
+Main FastAPI Application
 """
-import logging
-from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from datetime import datetime
-import uuid
 from fastapi.responses import HTMLResponse
 from pathlib import Path
-from app.api.conversion import router as conversion_router
-from app.api.pricing import router as pricing_router  # ADD THIS IMPORT
-from app.core.config import get_settings
+from app.api.pricing import router as pricing_router
+from app.api.routing_api import router as routing_router
+from app.api.multi_rail_api import router as multi_rail_router
+from app.api.deals_api import router as deals_router
+from app.api.chat_api import router as chat_router
+from app.api.rules_api import router as rules_router
+from app.api.admin_api import router as admin_router
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__)
-
-settings = get_settings()
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Application lifespan handler for startup/shutdown events"""
-    # Startup
-    logger.info(f"Starting {settings.app_name} v{settings.app_version}")
-    logger.info(f"Environment: {settings.environment}")
-    yield
-    # Shutdown
-    logger.info("Shutting down FX Conversion Service")
-
-
-# Create FastAPI application
 app = FastAPI(
-    title=settings.app_name,
-    version=settings.app_version,
-    description="""
-## FX Currency Conversion Microservice
-
-A high-performance microservice for real-time currency conversion with
-integration to Refinitiv (Reuters) for live exchange rates.
-
-### Features
-
-* **Real-time Exchange Rates** - Live rates from Refinitiv with fallback providers
-* **Bid/Ask Spreads** - Proper handling of buy/sell directions
-* **Multi-Currency Support** - Major and exotic currency pairs
-* **Rate Caching** - Intelligent caching to reduce API calls
-* **Quote Generation** - Get quotes before committing to conversion
-
-### API Versioning
-
-All endpoints are versioned under `/api/v1/fx/`
-
-### Authentication
-
-API key authentication required (when enabled):
-```
-X-API-Key: your-api-key
-```
-    """,
-    docs_url="/docs",
-    redoc_url="/redoc",
-    openapi_url="/openapi.json",
-    lifespan=lifespan
+    title="FX Smart Routing Engine",
+    description="Multi-rail FX routing with CBDC, Stablecoin support and Treasury Deals",
+    version="2.1.0"
 )
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+app.include_router(routing_router)
+app.include_router(multi_rail_router)
+app.include_router(deals_router)
+app.include_router(chat_router)
+app.include_router(pricing_router)
+app.include_router(rules_router)
+app.include_router(admin_router)
 
-# Request ID middleware
-@app.middleware("http")
-async def add_request_id(request: Request, call_next):
-    """Add unique request ID to each request"""
-    request_id = str(uuid.uuid4())
-    request.state.request_id = request_id
-    response = await call_next(request)
-    response.headers["X-Request-ID"] = request_id
-    return response
-
-
-# Global exception handler
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    """Handle uncaught exceptions"""
-    logger.error(f"Unhandled exception: {exc}", exc_info=True)
-    return JSONResponse(
-        status_code=500,
-        content={
-            "success": False,
-            "error": {
-                "code": "INTERNAL_ERROR",
-                "message": "An unexpected error occurred"
-            },
-            "timestamp": datetime.utcnow().isoformat(),
-            "request_id": getattr(request.state, 'request_id', None)
-        }
-    )
-
-
-# Include routers
-app.include_router(conversion_router)
-app.include_router(pricing_router)  # ADD THIS LINE HERE
-
-
-# Root endpoint
-@app.get("/", tags=["Root"])
+@app.get("/")
 async def root():
-    """Root endpoint with service information"""
     return {
-        "service": settings.app_name,
-        "version": settings.app_version,
-        "status": "running",
-        "docs": "/docs",
-        "health": "/api/v1/fx/health"
+        "service": "FX Smart Routing Engine",
+        "version": "2.2.0",
+        "features": [
+            "Treasury rate management",
+            "Customer tier pricing",
+            "Multi-provider routing",
+            "CBDC support (6 currencies)",
+            "Stablecoin support (5 coins)",
+            "mBridge cross-border",
+            "Treasury deals with approval workflow",
+            "Chat assistant",
+            "Rules engine for provider selection and margin adjustments"
+        ]
     }
+
+@app.get("/api/v1/fx/health")
+async def health():
+    return {"status": "healthy", "version": "2.1.0"}
 
 @app.get("/ui", response_class=HTMLResponse, include_in_schema=False)
 async def pricing_ui():
@@ -135,15 +64,4 @@ async def pricing_ui():
     html_path = Path(__file__).parent / "static" / "index.html"
     if html_path.exists():
         return html_path.read_text()
-    return "<h1>UI not found</h1>"
-
-
-# Run with uvicorn when executed directly
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(
-        "app.main:app",
-        host=settings.host,
-        port=settings.port,
-        reload=settings.debug
-    )
+    return "<h1>UI not found</h1><p>Place index.html in app/static/</p>"

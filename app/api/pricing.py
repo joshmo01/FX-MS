@@ -1,376 +1,339 @@
 """
-Pricing API Endpoints
-Add this file to: app/api/pricing.py
+FX Pricing API Endpoints
 """
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from typing import Optional, Dict, Any
 from decimal import Decimal
-from typing import List, Optional
-from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field
+from datetime import datetime, timedelta
+from pathlib import Path
+import uuid
+import json
 
-from app.models.pricing import CustomerSegment, CurrencyCategory
-from app.core.pricing_engine import get_pricing_engine, FXPricingEngine
-from app.services.pricing_service import PricingService
+router = APIRouter(prefix="/api/v1/fx/pricing", tags=["pricing"])
 
-# Import your existing FX rate service - adjust import path as needed
-# from app.services.fx_provider import get_fx_rate_service, FXRateService
+# Module-level variables for config data
+SEGMENTS = {}
+TIERS = []
 
-router = APIRouter(prefix="/api/v1/fx/pricing", tags=["FX Pricing"])
+def _load_pricing_config():
+    """Load pricing configuration from JSON files"""
+    global SEGMENTS, TIERS
 
+    base_dir = Path(".")
 
-# ============================================
-# Pydantic Models for API
-# ============================================
-
-class MarginBreakdownResponse(BaseModel):
-    """Margin breakdown in response"""
-    segment_base_bps: float
-    tier_adjustment_bps: float
-    currency_factor_bps: float
-    negotiated_discount_bps: float
-
-
-class PricedQuoteRequest(BaseModel):
-    """Request for a priced FX quote"""
-    source_currency: str = Field(..., min_length=3, max_length=3, description="Source currency code")
-    target_currency: str = Field(..., min_length=3, max_length=3, description="Target currency code")
-    amount: float = Field(..., gt=0, description="Amount in source currency")
-    customer_id: str = Field(..., description="Customer identifier")
-    segment: CustomerSegment = Field(default=CustomerSegment.RETAIL, description="Customer segment")
-    direction: str = Field(default="SELL", pattern="^(BUY|SELL)$", description="Transaction direction")
-    negotiated_discount_bps: int = Field(default=0, ge=0, description="Pre-negotiated discount in bps")
-    client_reference: Optional[str] = Field(None, description="Client reference number")
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "source_currency": "USD",
-                "target_currency": "INR",
-                "amount": 100000.00,
-                "customer_id": "CUST-12345",
-                "segment": "MID_MARKET",
-                "direction": "SELL",
-                "negotiated_discount_bps": 0
-            }
+    # Load segments
+    segments_file = base_dir / "config" / "pricing_segments.json"
+    try:
+        with open(segments_file, 'r') as f:
+            segments_data = json.load(f)
+            # Convert to old format for backward compatibility
+            SEGMENTS = {}
+            for seg_id, seg_data in segments_data.items():
+                SEGMENTS[seg_id] = {
+                    "base": seg_data["base_margin_bps"],
+                    "min": seg_data["min_margin_bps"],
+                    "max": seg_data["max_margin_bps"],
+                    "vol_disc": seg_data["volume_discount_eligible"],
+                    "neg_rates": seg_data["negotiated_rates_allowed"]
+                }
+    except Exception as e:
+        print(f"Warning: Failed to load pricing segments from JSON: {e}")
+        # Fallback to defaults if file doesn't exist
+        SEGMENTS = {
+            "INSTITUTIONAL": {"base": 5, "min": 2, "max": 20, "vol_disc": True, "neg_rates": True},
+            "LARGE_CORPORATE": {"base": 25, "min": 10, "max": 75, "vol_disc": True, "neg_rates": True},
+            "MID_MARKET": {"base": 75, "min": 40, "max": 150, "vol_disc": True, "neg_rates": False},
+            "SMALL_BUSINESS": {"base": 150, "min": 100, "max": 250, "vol_disc": False, "neg_rates": False},
+            "RETAIL": {"base": 300, "min": 200, "max": 500, "vol_disc": False, "neg_rates": False},
+            "PRIVATE_BANKING": {"base": 50, "min": 20, "max": 100, "vol_disc": True, "neg_rates": True},
         }
 
+    # Load tiers
+    tiers_file = base_dir / "config" / "pricing_tiers.json"
+    try:
+        with open(tiers_file, 'r') as f:
+            tiers_data = json.load(f)
+            # Convert to old format for backward compatibility
+            TIERS = []
+            for tier_id, tier_data in sorted(tiers_data.items()):
+                TIERS.append({
+                    "id": tier_data["tier_id"],
+                    "min": tier_data["min_amount"],
+                    "max": tier_data["max_amount"],
+                    "adj": tier_data["adjustment_bps"]
+                })
+    except Exception as e:
+        print(f"Warning: Failed to load pricing tiers from JSON: {e}")
+        # Fallback to defaults
+        TIERS = [
+            {"id": "TIER_1", "min": 0, "max": 10000, "adj": 50},
+            {"id": "TIER_2", "min": 10000, "max": 50000, "adj": 25},
+            {"id": "TIER_3", "min": 50000, "max": 100000, "adj": 0},
+            {"id": "TIER_4", "min": 100000, "max": 500000, "adj": -15},
+            {"id": "TIER_5", "min": 500000, "max": 1000000, "adj": -25},
+            {"id": "TIER_6", "min": 1000000, "max": None, "adj": -40},
+        ]
 
-class PricedQuoteResponse(BaseModel):
-    """Response with priced quote"""
+def reload_pricing_config():
+    """Reload pricing configuration from files"""
+    _load_pricing_config()
+
+# Load config on module import
+_load_pricing_config()
+
+class QuoteRequest(BaseModel):
+    source_currency: str
+    target_currency: str
+    amount: float
+    customer_id: str
+    segment: str = "MID_MARKET"
+    direction: str = "SELL"
+    negotiated_discount_bps: float = 0
+    # Extensible fields for rules engine
+    office: Optional[str] = None
+    region: Optional[str] = None
+    customer_tier: Optional[str] = None
+    custom_attributes: Optional[Dict[str, Any]] = None
+
+class QuoteResponse(BaseModel):
     quote_id: str
     source_currency: str
     target_currency: str
+    source_amount: float
+    target_amount: float
     mid_rate: float
     customer_rate: float
     margin_bps: float
     margin_percent: float
-    margin_breakdown: MarginBreakdownResponse
-    source_amount: float
-    target_amount: float
     segment: str
     amount_tier: str
     currency_category: str
-    valid_until: datetime
-    rate_type: str = "FIRM"
+    direction: str
+    valid_until: str
+    margin_breakdown: dict
 
+# SEGMENTS and TIERS are now loaded from JSON files (see _load_pricing_config above)
 
-class SegmentConfigResponse(BaseModel):
-    """Segment configuration response"""
-    segment_id: str
-    segment_name: str
-    base_margin_bps: int
-    min_margin_bps: int
-    max_margin_bps: int
-    volume_discount_eligible: bool
-    negotiated_rates_allowed: bool
+CURRENCY_CATEGORIES = {
+    "G10": {"currencies": ["USD", "EUR", "JPY", "GBP", "CHF", "AUD", "NZD", "CAD", "SEK", "NOK"], "retail": 50, "corp": 15, "inst": 2},
+    "MINOR": {"currencies": ["SGD", "HKD", "DKK", "PLN", "CZK", "HUF"], "retail": 100, "corp": 30, "inst": 5},
+    "EXOTIC": {"currencies": ["TRY", "ZAR", "MXN", "BRL", "ARS", "RUB"], "retail": 200, "corp": 75, "inst": 15},
+    "RESTRICTED": {"currencies": ["INR", "CNY", "KRW", "TWD", "PHP", "IDR", "MYR", "THB", "VND"], "retail": 300, "corp": 100, "inst": 25},
+}
 
+MOCK_RATES = {
+    "USDINR": 84.50, "EURINR": 89.20, "GBPINR": 106.50, "EURUSD": 1.0557,
+    "GBPUSD": 1.2604, "USDJPY": 154.80, "USDAED": 3.6725, "USDSGD": 1.3450,
+    "AUDINR": 54.20, "CADINR": 59.80, "CHFINR": 94.50, "USDCHF": 0.8950,
+}
 
-class AmountTierResponse(BaseModel):
-    """Amount tier response"""
-    tier_id: str
-    tier_order: int
-    min_amount: float
-    max_amount: Optional[float]
-    adjustment_bps: int
-    description: str
+def get_mid_rate(source: str, target: str) -> float:
+    pair = source + target
+    if pair in MOCK_RATES:
+        return MOCK_RATES[pair]
+    reverse = target + source
+    if reverse in MOCK_RATES:
+        return 1 / MOCK_RATES[reverse]
+    return 84.50
 
+def get_tier(amount: float) -> dict:
+    for tier in TIERS:
+        if tier["max"] is None or amount < tier["max"]:
+            return tier
+    return TIERS[-1]
 
-class MarginInfoResponse(BaseModel):
-    """Margin information for a currency pair"""
-    currency_pair: str
-    segment: str
-    amount: float
-    total_margin_bps: float
-    margin_percent: float
-    tier: str
-    category: str
-    breakdown: MarginBreakdownResponse
+def get_currency_category(currency: str) -> tuple:
+    for cat, data in CURRENCY_CATEGORIES.items():
+        if currency in data["currencies"]:
+            return cat, data
+    return "RESTRICTED", CURRENCY_CATEGORIES["RESTRICTED"]
 
-
-class MarginCalculateRequest(BaseModel):
-    """Request to calculate margin"""
-    base_currency: str = Field(..., min_length=3, max_length=3)
-    quote_currency: str = Field(..., min_length=3, max_length=3)
-    amount: float = Field(..., gt=0)
-    segment: CustomerSegment = Field(default=CustomerSegment.RETAIL)
-    negotiated_discount_bps: int = Field(default=0, ge=0)
-
-
-# ============================================
-# Dependency Injection
-# ============================================
-
-
-def get_pricing_service_dep() -> PricingService:
-    """
-    Dependency injection for pricing service.
-    Integrated with Refinitiv FX Rate Service.
-    """
-    from app.services.fx_provider import get_fx_service
-    fx_service = get_fx_service()
-    return PricingService(fx_rate_service=fx_service)
-
-# ============================================
-# API Endpoints
-# ============================================
-
-@router.post("/quote", response_model=PricedQuoteResponse)
-async def generate_priced_quote(
-    request: PricedQuoteRequest,
-    pricing_service: PricingService = Depends(get_pricing_service_dep)
-):
-    """
-    Generate FX quote with customer-specific pricing.
-    
-    Applies:
-    - Customer segment base margin (Institutional to Retail)
-    - Transaction amount tier adjustment (volume discounts)
-    - Currency pair liquidity factor (G10/Minor/Exotic/Restricted)
-    - Negotiated customer discounts (if applicable)
-    
-    Returns a firm quote valid for 30 seconds.
-    """
-    try:
-        quote = await pricing_service.get_priced_quote(
-            source_currency=request.source_currency.upper(),
-            target_currency=request.target_currency.upper(),
-            amount=Decimal(str(request.amount)),
-            customer_id=request.customer_id,
-            segment=request.segment,
-            direction=request.direction,
-            negotiated_discount_bps=request.negotiated_discount_bps
-        )
-        
-        return PricedQuoteResponse(
-            quote_id=quote.quote_id,
-            source_currency=quote.base_currency,
-            target_currency=quote.quote_currency,
-            mid_rate=float(quote.mid_rate),
-            customer_rate=float(quote.customer_rate),
-            margin_bps=float(quote.margin_bps),
-            margin_percent=float(quote.margin_bps / 100),
-            margin_breakdown=MarginBreakdownResponse(
-                segment_base_bps=float(quote.margin_breakdown.segment_base_bps),
-                tier_adjustment_bps=float(quote.margin_breakdown.tier_adjustment_bps),
-                currency_factor_bps=float(quote.margin_breakdown.currency_factor_bps),
-                negotiated_discount_bps=float(quote.margin_breakdown.negotiated_discount_bps)
-            ),
-            source_amount=float(quote.amount),
-            target_amount=float(quote.converted_amount),
-            segment=quote.segment.value,
-            amount_tier=quote.amount_tier,
-            currency_category=quote.currency_category.value,
-            valid_until=quote.valid_until
-        )
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate quote: {str(e)}")
-
-
-@router.get("/segments", response_model=List[SegmentConfigResponse])
-async def get_segments(
-    engine: FXPricingEngine = Depends(get_pricing_engine)
-):
-    """
-    Get all customer segment configurations.
-    
-    Returns the 6 standard segments with their pricing parameters:
-    - INSTITUTIONAL: Banks, hedge funds (2-20 bps)
-    - LARGE_CORPORATE: MNCs, treasury (10-75 bps)
-    - MID_MARKET: SMEs (40-150 bps)
-    - SMALL_BUSINESS: Occasional users (100-250 bps)
-    - RETAIL: Individual customers (200-500 bps)
-    - PRIVATE_BANKING: HNW individuals (20-100 bps)
-    """
-    segments = engine.get_all_segments()
-    return [
-        SegmentConfigResponse(
-            segment_id=s.segment_id.value,
-            segment_name=s.segment_name,
-            base_margin_bps=s.base_margin_bps,
-            min_margin_bps=s.min_margin_bps,
-            max_margin_bps=s.max_margin_bps,
-            volume_discount_eligible=s.volume_discount_eligible,
-            negotiated_rates_allowed=s.negotiated_rates_allowed
-        )
-        for s in segments
-    ]
-
-
-@router.get("/tiers", response_model=List[AmountTierResponse])
-async def get_amount_tiers(
-    engine: FXPricingEngine = Depends(get_pricing_engine)
-):
-    """
-    Get all amount tier configurations.
-    
-    Returns the 6 standard tiers with volume adjustments:
-    - TIER_1: < $10K (+50 bps premium)
-    - TIER_2: $10K-$50K (+25 bps)
-    - TIER_3: $50K-$100K (base rate)
-    - TIER_4: $100K-$500K (-15 bps discount)
-    - TIER_5: $500K-$1M (-25 bps)
-    - TIER_6: > $1M (-40 bps)
-    """
-    tiers = engine.get_all_tiers()
-    return [
-        AmountTierResponse(
-            tier_id=t.tier_id,
-            tier_order=t.tier_order,
-            min_amount=float(t.min_amount),
-            max_amount=float(t.max_amount) if t.max_amount else None,
-            adjustment_bps=t.margin_adjustment_bps,
-            description=f"{'Premium' if t.margin_adjustment_bps > 0 else 'Discount' if t.margin_adjustment_bps < 0 else 'Base'}: {abs(t.margin_adjustment_bps)} bps"
-        )
-        for t in tiers
-    ]
-
-
-@router.get("/margin/{base_ccy}/{quote_ccy}", response_model=MarginInfoResponse)
-async def get_margin_info(
-    base_ccy: str,
-    quote_ccy: str,
-    segment: CustomerSegment = Query(default=CustomerSegment.RETAIL, description="Customer segment"),
-    amount: float = Query(default=10000, gt=0, description="Transaction amount"),
-    pricing_service: PricingService = Depends(get_pricing_service_dep)
-):
-    """
-    Get margin information for a currency pair without generating a quote.
-    
-    Useful for:
-    - Displaying indicative pricing to customers
-    - Calculating expected costs before committing
-    - Comparing pricing across segments
-    """
-    info = pricing_service.get_margin_info(
-        base_currency=base_ccy.upper(),
-        quote_currency=quote_ccy.upper(),
-        amount=Decimal(str(amount)),
-        segment=segment
-    )
-    
-    return MarginInfoResponse(
-        currency_pair=info["currency_pair"],
-        segment=info["segment"],
-        amount=info["amount"],
-        total_margin_bps=info["total_margin_bps"],
-        margin_percent=info["margin_percent"],
-        tier=info["tier"],
-        category=info["category"],
-        breakdown=MarginBreakdownResponse(**info["breakdown"])
-    )
-
-
-@router.post("/margin/calculate", response_model=MarginInfoResponse)
-async def calculate_margin(
-    request: MarginCalculateRequest,
-    pricing_service: PricingService = Depends(get_pricing_service_dep)
-):
-    """
-    Calculate margin for a specific scenario.
-    
-    POST alternative to GET /margin/{base}/{quote} for complex queries.
-    """
-    info = pricing_service.get_margin_info(
-        base_currency=request.base_currency.upper(),
-        quote_currency=request.quote_currency.upper(),
-        amount=Decimal(str(request.amount)),
-        segment=request.segment
-    )
-    
-    return MarginInfoResponse(
-        currency_pair=info["currency_pair"],
-        segment=info["segment"],
-        amount=info["amount"],
-        total_margin_bps=info["total_margin_bps"],
-        margin_percent=info["margin_percent"],
-        tier=info["tier"],
-        category=info["category"],
-        breakdown=MarginBreakdownResponse(**info["breakdown"])
-    )
-
-
-@router.get("/categories")
-async def get_currency_categories():
-    """
-    Get currency category definitions.
-    
-    Returns the 4 liquidity categories and their markup ranges.
-    """
-    return {
-        "categories": [
-            {
-                "category": "G10",
-                "description": "Most liquid major currencies",
-                "currencies": ["USD", "EUR", "JPY", "GBP", "CHF", "AUD", "NZD", "CAD", "SEK", "NOK"],
-                "retail_markup_bps": 50,
-                "corporate_markup_bps": 15,
-                "institutional_markup_bps": 2
-            },
-            {
-                "category": "MINOR",
-                "description": "Less liquid developed market currencies",
-                "currencies": ["SGD", "HKD", "DKK", "PLN", "CZK", "HUF"],
-                "retail_markup_bps": 100,
-                "corporate_markup_bps": 30,
-                "institutional_markup_bps": 5
-            },
-            {
-                "category": "EXOTIC",
-                "description": "Emerging market currencies",
-                "currencies": ["TRY", "ZAR", "MXN", "BRL", "ARS", "RUB"],
-                "retail_markup_bps": 200,
-                "corporate_markup_bps": 75,
-                "institutional_markup_bps": 15
-            },
-            {
-                "category": "RESTRICTED",
-                "description": "Capital control currencies",
-                "currencies": ["INR", "CNY", "KRW", "TWD", "PHP", "IDR", "MYR", "THB", "VND"],
-                "retail_markup_bps": 300,
-                "corporate_markup_bps": 100,
-                "institutional_markup_bps": 25
-            }
-        ]
-    }
-
+def get_currency_factor(segment: str, category_data: dict) -> int:
+    if segment in ["INSTITUTIONAL"]:
+        return category_data["inst"]
+    elif segment in ["LARGE_CORPORATE", "MID_MARKET", "PRIVATE_BANKING"]:
+        return category_data["corp"]
+    return category_data["retail"]
 
 @router.get("/health")
-async def pricing_health():
-    """Pricing service health check."""
-    try:
-        engine = get_pricing_engine()
-        return {
-            "status": "healthy",
-            "service": "fx-pricing",
-            "segments_loaded": len(engine.get_all_segments()),
-            "tiers_loaded": len(engine.get_all_tiers()),
-            "timestamp": datetime.utcnow().isoformat()
+async def health():
+    return {"status": "healthy", "service": "fx-pricing", "segments_loaded": len(SEGMENTS), "tiers_loaded": len(TIERS)}
+
+@router.get("/segments")
+async def get_segments():
+    result = []
+    for seg, data in SEGMENTS.items():
+        result.append({
+            "segment_id": seg,
+            "segment_name": seg.replace("_", " ").title(),
+            "base_margin_bps": data["base"],
+            "min_margin_bps": data["min"],
+            "max_margin_bps": data["max"],
+            "volume_discount_eligible": data["vol_disc"],
+            "negotiated_rates_allowed": data["neg_rates"],
+        })
+    return result
+
+@router.get("/tiers")
+async def get_tiers():
+    result = []
+    for t in TIERS:
+        max_str = "Unlimited" if t["max"] is None else t["max"]
+        result.append({
+            "tier_id": t["id"],
+            "min_amount": t["min"],
+            "max_amount": t["max"],
+            "adjustment_bps": t["adj"],
+            "description": str(t["min"]) + " - " + str(max_str),
+        })
+    return result
+
+@router.get("/categories")
+async def get_categories():
+    return CURRENCY_CATEGORIES
+
+@router.post("/quote", response_model=QuoteResponse)
+async def get_quote(request: QuoteRequest):
+    if request.segment not in SEGMENTS:
+        raise HTTPException(status_code=400, detail="Invalid segment: " + request.segment)
+
+    seg_config = SEGMENTS[request.segment]
+    mid_rate = get_mid_rate(request.source_currency, request.target_currency)
+    tier = get_tier(request.amount)
+    cat_name, cat_data = get_currency_category(request.target_currency)
+    currency_factor = get_currency_factor(request.segment, cat_data)
+
+    # Build pricing context for rules engine
+    from app.services.rules_engine import PricingContext, RulesEngine, RuleType
+
+    pricing_context = PricingContext(
+        customer_segment=request.segment,
+        customer_id=request.customer_id,
+        customer_tier=request.customer_tier,
+        currency_pair=f"{request.source_currency}{request.target_currency}",
+        base_currency=request.source_currency,
+        quote_currency=request.target_currency,
+        currency_category=cat_name,
+        amount=request.amount,
+        amount_tier=tier["id"],
+        direction=request.direction,
+        office=request.office,
+        region=request.region,
+        negotiated_discount_bps=request.negotiated_discount_bps,
+        segment_base_margin=seg_config["base"],
+        tier_adjustment=tier["adj"],
+        currency_factor=currency_factor,
+        custom_attributes=request.custom_attributes or {},
+        timestamp=datetime.utcnow()
+    )
+
+    # Evaluate pricing rules
+    engine = RulesEngine()
+    rule_result = engine.evaluate(RuleType.MARGIN_ADJUSTMENT, pricing_context)
+
+    # Calculate margin with or without rule adjustments
+    if rule_result.matched:
+        margin_actions = rule_result.actions.margin_adjustment
+
+        # Apply rule-based margin calculation
+        base_margin = margin_actions.base_margin_override if margin_actions.base_margin_override is not None else seg_config["base"]
+        tier_adj_multiplier = margin_actions.tier_adjustment_multiplier if margin_actions.tier_adjustment_multiplier is not None else 1.0
+        tier_adjustment = tier["adj"] * tier_adj_multiplier
+        additional_margin = margin_actions.additional_margin_bps if margin_actions.additional_margin_bps is not None else 0
+
+        total_margin_bps = (
+            base_margin +
+            tier_adjustment +
+            currency_factor +
+            additional_margin -
+            request.negotiated_discount_bps
+        )
+
+        # Apply rule-specific min/max
+        min_margin = margin_actions.min_margin_bps if margin_actions.min_margin_bps is not None else seg_config["min"]
+        max_margin = margin_actions.max_margin_bps if margin_actions.max_margin_bps is not None else seg_config["max"]
+        total_margin_bps = max(min_margin, min(max_margin, total_margin_bps))
+
+        # Build margin breakdown with rule info
+        margin_breakdown = {
+            "segment_base_bps": seg_config["base"],
+            "tier_adjustment_bps": tier["adj"],
+            "currency_factor_bps": currency_factor,
+            "negotiated_discount_bps": request.negotiated_discount_bps,
+            "rule_applied_id": rule_result.winning_rule.rule_id,
+            "rule_applied_name": rule_result.winning_rule.rule_name,
+            "rule_base_override_bps": margin_actions.base_margin_override,
+            "rule_additional_margin_bps": additional_margin,
+            "rule_tier_multiplier": tier_adj_multiplier,
+            "total_before_constraints": base_margin + tier_adjustment + currency_factor + additional_margin - request.negotiated_discount_bps,
         }
-    except Exception as e:
-        return {
-            "status": "unhealthy",
-            "service": "fx-pricing",
-            "error": str(e)
+    else:
+        # Fallback to default calculation
+        total_margin_bps = seg_config["base"] + tier["adj"] + currency_factor - request.negotiated_discount_bps
+        total_margin_bps = max(seg_config["min"], min(seg_config["max"], total_margin_bps))
+
+        margin_breakdown = {
+            "segment_base_bps": seg_config["base"],
+            "tier_adjustment_bps": tier["adj"],
+            "currency_factor_bps": currency_factor,
+            "negotiated_discount_bps": request.negotiated_discount_bps,
+            "rule_applied_id": None,
+            "rule_applied_name": None,
+            "total_before_constraints": seg_config["base"] + tier["adj"] + currency_factor - request.negotiated_discount_bps,
         }
+
+    margin_percent = total_margin_bps / 10000
+
+    if request.direction == "SELL":
+        customer_rate = mid_rate * (1 - margin_percent)
+    else:
+        customer_rate = mid_rate * (1 + margin_percent)
+
+    target_amount = request.amount * customer_rate
+
+    return QuoteResponse(
+        quote_id="QT-" + uuid.uuid4().hex[:8].upper(),
+        source_currency=request.source_currency,
+        target_currency=request.target_currency,
+        source_amount=request.amount,
+        target_amount=round(target_amount, 2),
+        mid_rate=mid_rate,
+        customer_rate=round(customer_rate, 4),
+        margin_bps=total_margin_bps,
+        margin_percent=round(margin_percent * 100, 4),
+        segment=request.segment,
+        amount_tier=tier["id"],
+        currency_category=cat_name,
+        direction=request.direction,
+        valid_until=(datetime.utcnow() + timedelta(seconds=30)).isoformat(),
+        margin_breakdown=margin_breakdown
+    )
+
+@router.get("/margin/{base}/{quote}")
+async def get_margin_info(base: str, quote: str, segment: str = "MID_MARKET", amount: float = 100000):
+    if segment not in SEGMENTS:
+        raise HTTPException(status_code=400, detail="Invalid segment: " + segment)
+    
+    seg_config = SEGMENTS[segment]
+    tier = get_tier(amount)
+    cat_name, cat_data = get_currency_category(quote)
+    currency_factor = get_currency_factor(segment, cat_data)
+    
+    total = seg_config["base"] + tier["adj"] + currency_factor
+    total = max(seg_config["min"], min(seg_config["max"], total))
+    
+    return {
+        "currency_pair": base + "/" + quote,
+        "segment": segment,
+        "amount": amount,
+        "tier": tier["id"],
+        "currency_category": cat_name,
+        "margin_bps": total,
+        "margin_percent": round(total / 100, 4),
+        "breakdown": {
+            "segment_base": seg_config["base"],
+            "tier_adjustment": tier["adj"],
+            "currency_factor": currency_factor,
+        }
+    }

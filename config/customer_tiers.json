@@ -1,0 +1,57 @@
+{
+  "PLATINUM": {
+    "tier_id": "PLATINUM",
+    "name": "platinum",
+    "min_annual_volume_usd": 1000000000,
+    "markup_discount_pct": 2,
+    "spread_reduction_bps": 10,
+    "priority_routing": true,
+    "dedicated_treasury": true,
+    "max_transaction_usd": 1000000,
+    "stp_threshold_usd": 100000
+  },
+  "GOLD": {
+    "tier_id": "GOLD",
+    "name": "Gold",
+    "min_annual_volume_usd": 25000000,
+    "markup_discount_pct": 1,
+    "spread_reduction_bps": 3,
+    "priority_routing": true,
+    "dedicated_treasury": false,
+    "max_transaction_usd": 10000000,
+    "stp_threshold_usd": 100000
+  },
+  "SILVER": {
+    "tier_id": "SILVER",
+    "name": "Silver",
+    "min_annual_volume_usd": 1000000,
+    "markup_discount_pct": 1,
+    "spread_reduction_bps": 2,
+    "priority_routing": true,
+    "dedicated_treasury": true,
+    "max_transaction_usd": 1000000,
+    "stp_threshold_usd": 100000
+  },
+  "BRONZ": {
+    "tier_id": "BRONZ",
+    "name": "bronz",
+    "min_annual_volume_usd": 50000,
+    "markup_discount_pct": 0.5,
+    "spread_reduction_bps": 1,
+    "priority_routing": false,
+    "dedicated_treasury": false,
+    "max_transaction_usd": 1000000,
+    "stp_threshold_usd": 100000
+  },
+  "SMALL": {
+    "tier_id": "SMALL",
+    "name": "Small Business",
+    "min_annual_volume_usd": 0,
+    "markup_discount_pct": 0,
+    "spread_reduction_bps": 0,
+    "priority_routing": false,
+    "dedicated_treasury": false,
+    "max_transaction_usd": 1000000,
+    "stp_threshold_usd": 100000
+  }
+}

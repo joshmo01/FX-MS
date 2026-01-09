@@ -1,0 +1,44 @@
+{
+  "TIER_1": {
+    "tier_id": "TIER_1",
+    "min_amount": 0,
+    "max_amount": 10000,
+    "adjustment_bps": 50,
+    "description": "Small transactions (0-10K)"
+  },
+  "TIER_2": {
+    "tier_id": "TIER_2",
+    "min_amount": 10000,
+    "max_amount": 50000,
+    "adjustment_bps": 25,
+    "description": "Medium transactions (10K-50K)"
+  },
+  "TIER_3": {
+    "tier_id": "TIER_3",
+    "min_amount": 50000,
+    "max_amount": 100000,
+    "adjustment_bps": 0,
+    "description": "Large transactions (50K-100K)"
+  },
+  "TIER_4": {
+    "tier_id": "TIER_4",
+    "min_amount": 100000,
+    "max_amount": 500000,
+    "adjustment_bps": -15,
+    "description": "Very large transactions (100K-500K)"
+  },
+  "TIER_5": {
+    "tier_id": "TIER_5",
+    "min_amount": 500000,
+    "max_amount": 1000000,
+    "adjustment_bps": -25,
+    "description": "Premium transactions (500K-1M)"
+  },
+  "TIER_6": {
+    "tier_id": "TIER_6",
+    "min_amount": 1000000,
+    "max_amount": null,
+    "adjustment_bps": -40,
+    "description": "Institutional transactions (1M+)"
+  }
+}

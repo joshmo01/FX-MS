@@ -1,0 +1,294 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2026-01-01T07:52:41.013929Z",
+  "rules": [
+    {
+      "rule_id": "PRICE-001",
+      "rule_name": "Premium Institutional Discount",
+      "rule_type": "MARGIN_ADJUSTMENT",
+      "priority": 90,
+      "enabled": true,
+      "valid_from": "2025-01-01T00:00:00Z",
+      "valid_until": null,
+      "conditions": {
+        "operator": "AND",
+        "criteria": [
+          {
+            "field": "customer_tier",
+            "operator": "IN",
+            "values": [
+              "PLATINUM",
+              "GOLD"
+            ]
+          },
+          {
+            "field": "amount",
+            "operator": "GREATER_THAN",
+            "value": 10000000
+          },
+          {
+            "field": "currency_category",
+            "operator": "EQUALS",
+            "value": "G10"
+          }
+        ]
+      },
+      "actions": {
+        "margin_adjustment": {
+          "base_margin_override": null,
+          "additional_margin_bps": -10,
+          "tier_adjustment_multiplier": 1.0,
+          "min_margin_bps": 2,
+          "max_margin_bps": 15
+        }
+      },
+      "metadata": {
+        "created_by": "pricing_manager",
+        "created_at": "2025-01-01T00:00:00Z",
+        "description": "Additional discount for large premium tier G10 trades to retain key clients",
+        "tags": [
+          "premium",
+          "discount",
+          "g10",
+          "retention"
+        ]
+      }
+    },
+    {
+      "rule_id": "PRICE-002",
+      "rule_name": "After Hours Premium",
+      "rule_type": "MARGIN_ADJUSTMENT",
+      "priority": 60,
+      "enabled": true,
+      "valid_from": "2025-01-01T00:00:00Z",
+      "valid_until": null,
+      "conditions": {
+        "operator": "AND",
+        "criteria": [
+          {
+            "field": "time_of_day",
+            "operator": "OUTSIDE_HOURS",
+            "value": {
+              "start": "09:00",
+              "end": "17:00",
+              "timezone": "UTC"
+            }
+          },
+          {
+            "field": "customer_segment",
+            "operator": "NOT_IN",
+            "values": [
+              "INSTITUTIONAL"
+            ]
+          }
+        ]
+      },
+      "actions": {
+        "margin_adjustment": {
+          "base_margin_override": null,
+          "additional_margin_bps": 25,
+          "tier_adjustment_multiplier": 1.2,
+          "min_margin_bps": null,
+          "max_margin_bps": null
+        }
+      },
+      "metadata": {
+        "created_by": "pricing_manager",
+        "created_at": "2025-01-01T00:00:00Z",
+        "description": "Add premium for after-hours trading to cover operational costs",
+        "tags": [
+          "after-hours",
+          "premium",
+          "operational-cost"
+        ]
+      }
+    },
+    {
+      "rule_id": "PRICE-003",
+      "rule_name": "Small Retail Transaction Surcharge",
+      "rule_type": "MARGIN_ADJUSTMENT",
+      "priority": 40,
+      "enabled": false,
+      "valid_from": "2025-01-01T00:00:00Z",
+      "valid_until": null,
+      "conditions": {
+        "operator": "AND",
+        "criteria": [
+          {
+            "field": "customer_segment",
+            "operator": "IN",
+            "value": null,
+            "values": [
+              "RETAIL",
+              "SMALL_BUSINESS"
+            ]
+          },
+          {
+            "field": "amount_tier",
+            "operator": "IN",
+            "value": null,
+            "values": [
+              "TIER_1",
+              "TIER_2"
+            ]
+          }
+        ]
+      },
+      "actions": {
+        "provider_selection": null,
+        "margin_adjustment": {
+          "base_margin_override": null,
+          "additional_margin_bps": 30.0,
+          "tier_adjustment_multiplier": 1.0,
+          "min_margin_bps": 150.0,
+          "max_margin_bps": null
+        }
+      },
+      "metadata": {
+        "created_by": "pricing_manager",
+        "created_at": "2025-01-01T00:00:00Z",
+        "updated_at": "2025-12-31T19:19:28.323297Z",
+        "description": "Additional margin for small retail transactions to ensure profitability",
+        "tags": [
+          "retail",
+          "small-value",
+          "surcharge"
+        ]
+      }
+    },
+    {
+      "rule_id": "PRICE-004",
+      "rule_name": "Exotic Currency Risk Premium",
+      "rule_type": "MARGIN_ADJUSTMENT",
+      "priority": 50,
+      "enabled": true,
+      "valid_from": "2025-01-01T00:00:00Z",
+      "valid_until": null,
+      "conditions": {
+        "operator": "AND",
+        "criteria": [
+          {
+            "field": "currency_category",
+            "operator": "IN",
+            "values": [
+              "EXOTIC",
+              "RESTRICTED"
+            ]
+          }
+        ]
+      },
+      "actions": {
+        "margin_adjustment": {
+          "base_margin_override": null,
+          "additional_margin_bps": 0,
+          "tier_adjustment_multiplier": 1.5,
+          "min_margin_bps": null,
+          "max_margin_bps": null
+        }
+      },
+      "metadata": {
+        "created_by": "risk_manager",
+        "created_at": "2025-01-01T00:00:00Z",
+        "description": "Increase tier adjustment for exotic/restricted currencies to account for volatility",
+        "tags": [
+          "exotic",
+          "risk-adjustment",
+          "volatility"
+        ]
+      }
+    },
+    {
+      "rule_id": "PRICE-005",
+      "rule_name": "Large Corporate Volume Discount",
+      "rule_type": "MARGIN_ADJUSTMENT",
+      "priority": 70,
+      "enabled": false,
+      "valid_from": "2025-01-01T00:00:00Z",
+      "valid_until": null,
+      "conditions": {
+        "operator": "AND",
+        "criteria": [
+          {
+            "field": "customer_segment",
+            "operator": "EQUALS",
+            "value": "LARGE_CORPORATE",
+            "values": null
+          },
+          {
+            "field": "amount_tier",
+            "operator": "IN",
+            "value": null,
+            "values": [
+              "TIER_5",
+              "TIER_6"
+            ]
+          }
+        ]
+      },
+      "actions": {
+        "provider_selection": null,
+        "margin_adjustment": {
+          "base_margin_override": null,
+          "additional_margin_bps": -5.0,
+          "tier_adjustment_multiplier": 1.0,
+          "min_margin_bps": 10.0,
+          "max_margin_bps": 50.0
+        }
+      },
+      "metadata": {
+        "created_by": "corporate_banking",
+        "created_at": "2025-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T07:52:41.013218Z",
+        "description": "Additional volume discount for large corporate clients in top tiers",
+        "tags": [
+          "corporate",
+          "volume-discount",
+          "relationship"
+        ]
+      }
+    },
+    {
+      "rule_id": "PRICE-006",
+      "rule_name": "INR Cross Special Pricing",
+      "rule_type": "MARGIN_ADJUSTMENT",
+      "priority": 65,
+      "enabled": true,
+      "valid_from": "2025-01-01T00:00:00Z",
+      "valid_until": null,
+      "conditions": {
+        "operator": "AND",
+        "criteria": [
+          {
+            "field": "currency_pair",
+            "operator": "ENDS_WITH",
+            "value": "INR"
+          },
+          {
+            "field": "amount",
+            "operator": "GREATER_THAN",
+            "value": 1000000
+          }
+        ]
+      },
+      "actions": {
+        "margin_adjustment": {
+          "base_margin_override": null,
+          "additional_margin_bps": -3,
+          "tier_adjustment_multiplier": 0.9,
+          "min_margin_bps": null,
+          "max_margin_bps": null
+        }
+      },
+      "metadata": {
+        "created_by": "inr_desk",
+        "created_at": "2025-01-01T00:00:00Z",
+        "description": "Competitive pricing for large INR cross transactions",
+        "tags": [
+          "inr",
+          "competitive",
+          "cross-currency"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,1652 @@
+{
+  "timestamp": "2025-12-08T23:26:01.387384",
+  "total_scenarios": 22,
+  "passed": 22,
+  "failed": 0,
+  "results": [
+    {
+      "scenario_id": "T001",
+      "scenario_name": "USD to INR Direct",
+      "passed": true,
+      "routes_found": 4,
+      "best_route": {
+        "route_id": "FF-001",
+        "name": "SWIFT Direct",
+        "legs": 1,
+        "fee_bps": 25,
+        "settlement_time": "1-3 days",
+        "regulated": true,
+        "path": [],
+        "is_best": false,
+        "is_recommended": false,
+        "is_experimental": false
+      },
+      "all_routes": [
+        {
+          "route_id": "FF-001",
+          "name": "SWIFT Direct",
+          "legs": 1,
+          "fee_bps": 25,
+          "settlement_time": "1-3 days",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "FF-002",
+          "name": "Local Rails (RTGS)",
+          "legs": 1,
+          "fee_bps": 15,
+          "settlement_time": "4 hours",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "FF-003",
+          "name": "USD Triangulation",
+          "legs": 2,
+          "fee_bps": 30,
+          "settlement_time": "4-8 hours",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "FF-004",
+          "name": "EUR Triangulation",
+          "legs": 2,
+          "fee_bps": 32,
+          "settlement_time": "4-8 hours",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        }
+      ],
+      "execution_time_ms": 0.009298324584960938,
+      "error": ""
+    },
+    {
+      "scenario_id": "T002",
+      "scenario_name": "EUR to SGD Cross",
+      "passed": true,
+      "routes_found": 4,
+      "best_route": {
+        "route_id": "FF-001",
+        "name": "SWIFT Direct",
+        "legs": 1,
+        "fee_bps": 25,
+        "settlement_time": "1-3 days",
+        "regulated": true,
+        "path": [],
+        "is_best": false,
+        "is_recommended": false,
+        "is_experimental": false
+      },
+      "all_routes": [
+        {
+          "route_id": "FF-001",
+          "name": "SWIFT Direct",
+          "legs": 1,
+          "fee_bps": 25,
+          "settlement_time": "1-3 days",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "FF-002",
+          "name": "Local Rails (RTGS)",
+          "legs": 1,
+          "fee_bps": 15,
+          "settlement_time": "4 hours",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "FF-003",
+          "name": "USD Triangulation",
+          "legs": 2,
+          "fee_bps": 30,
+          "settlement_time": "4-8 hours",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "FF-004",
+          "name": "EUR Triangulation",
+          "legs": 2,
+          "fee_bps": 32,
+          "settlement_time": "4-8 hours",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        }
+      ],
+      "execution_time_ms": 0.0016689300537109375,
+      "error": ""
+    },
+    {
+      "scenario_id": "T003",
+      "scenario_name": "INR to e-INR Mint",
+      "passed": true,
+      "routes_found": 3,
+      "best_route": {
+        "route_id": "FC-001",
+        "name": "Direct Mint",
+        "legs": 1,
+        "fee_bps": 0,
+        "settlement_time": "5 seconds",
+        "regulated": true,
+        "path": [],
+        "is_best": true,
+        "is_recommended": false,
+        "is_experimental": false
+      },
+      "all_routes": [
+        {
+          "route_id": "FC-001",
+          "name": "Direct Mint",
+          "legs": 1,
+          "fee_bps": 0,
+          "settlement_time": "5 seconds",
+          "regulated": true,
+          "path": [],
+          "is_best": true,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "FC-002",
+          "name": "FX + Mint",
+          "legs": 2,
+          "fee_bps": 20,
+          "settlement_time": "4 hours",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "FC-003",
+          "name": "mBridge + Mint",
+          "legs": 3,
+          "fee_bps": 13,
+          "settlement_time": "30 seconds",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": true,
+          "is_experimental": false
+        }
+      ],
+      "execution_time_ms": 0.0011920928955078125,
+      "error": ""
+    },
+    {
+      "scenario_id": "T004",
+      "scenario_name": "USD to e-CNY via FX",
+      "passed": true,
+      "routes_found": 3,
+      "best_route": {
+        "route_id": "FC-001",
+        "name": "Direct Mint",
+        "legs": 1,
+        "fee_bps": 0,
+        "settlement_time": "5 seconds",
+        "regulated": true,
+        "path": [],
+        "is_best": true,
+        "is_recommended": false,
+        "is_experimental": false
+      },
+      "all_routes": [
+        {
+          "route_id": "FC-001",
+          "name": "Direct Mint",
+          "legs": 1,
+          "fee_bps": 0,
+          "settlement_time": "5 seconds",
+          "regulated": true,
+          "path": [],
+          "is_best": true,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "FC-002",
+          "name": "FX + Mint",
+          "legs": 2,
+          "fee_bps": 20,
+          "settlement_time": "4 hours",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "FC-003",
+          "name": "mBridge + Mint",
+          "legs": 3,
+          "fee_bps": 13,
+          "settlement_time": "30 seconds",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": true,
+          "is_experimental": false
+        }
+      ],
+      "execution_time_ms": 0.0002384185791015625,
+      "error": ""
+    },
+    {
+      "scenario_id": "T005",
+      "scenario_name": "e-INR to INR Redeem",
+      "passed": true,
+      "routes_found": 2,
+      "best_route": {
+        "route_id": "CF-001",
+        "name": "Direct Redeem",
+        "legs": 1,
+        "fee_bps": 0,
+        "settlement_time": "5 seconds",
+        "regulated": true,
+        "path": [],
+        "is_best": true,
+        "is_recommended": false,
+        "is_experimental": false
+      },
+      "all_routes": [
+        {
+          "route_id": "CF-001",
+          "name": "Direct Redeem",
+          "legs": 1,
+          "fee_bps": 0,
+          "settlement_time": "5 seconds",
+          "regulated": true,
+          "path": [],
+          "is_best": true,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "CF-002",
+          "name": "Redeem + FX",
+          "legs": 2,
+          "fee_bps": 20,
+          "settlement_time": "4 hours",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        }
+      ],
+      "execution_time_ms": 0.0007152557373046875,
+      "error": ""
+    },
+    {
+      "scenario_id": "T006",
+      "scenario_name": "e-CNY to USD",
+      "passed": true,
+      "routes_found": 2,
+      "best_route": {
+        "route_id": "CF-001",
+        "name": "Direct Redeem",
+        "legs": 1,
+        "fee_bps": 0,
+        "settlement_time": "5 seconds",
+        "regulated": true,
+        "path": [],
+        "is_best": true,
+        "is_recommended": false,
+        "is_experimental": false
+      },
+      "all_routes": [
+        {
+          "route_id": "CF-001",
+          "name": "Direct Redeem",
+          "legs": 1,
+          "fee_bps": 0,
+          "settlement_time": "5 seconds",
+          "regulated": true,
+          "path": [],
+          "is_best": true,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "CF-002",
+          "name": "Redeem + FX",
+          "legs": 2,
+          "fee_bps": 20,
+          "settlement_time": "4 hours",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        }
+      ],
+      "execution_time_ms": 0.000476837158203125,
+      "error": ""
+    },
+    {
+      "scenario_id": "T007",
+      "scenario_name": "e-CNY to e-HKD mBridge",
+      "passed": true,
+      "routes_found": 3,
+      "best_route": {
+        "route_id": "CC-001",
+        "name": "mBridge PvP",
+        "legs": 1,
+        "fee_bps": 13,
+        "settlement_time": "15 seconds",
+        "regulated": true,
+        "path": [],
+        "is_best": true,
+        "is_recommended": true,
+        "is_experimental": false
+      },
+      "all_routes": [
+        {
+          "route_id": "CC-001",
+          "name": "mBridge PvP",
+          "legs": 1,
+          "fee_bps": 13,
+          "settlement_time": "15 seconds",
+          "regulated": true,
+          "path": [],
+          "is_best": true,
+          "is_recommended": true,
+          "is_experimental": false
+        },
+        {
+          "route_id": "CC-002",
+          "name": "Project Nexus",
+          "legs": 1,
+          "fee_bps": 35,
+          "settlement_time": "60 seconds",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "CC-003",
+          "name": "Fiat Bridge (4 legs)",
+          "legs": 4,
+          "fee_bps": 40,
+          "settlement_time": "8 hours",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        }
+      ],
+      "execution_time_ms": 0.0007152557373046875,
+      "error": ""
+    },
+    {
+      "scenario_id": "T008",
+      "scenario_name": "e-THB to e-AED mBridge",
+      "passed": true,
+      "routes_found": 3,
+      "best_route": {
+        "route_id": "CC-001",
+        "name": "mBridge PvP",
+        "legs": 1,
+        "fee_bps": 13,
+        "settlement_time": "15 seconds",
+        "regulated": true,
+        "path": [],
+        "is_best": true,
+        "is_recommended": true,
+        "is_experimental": false
+      },
+      "all_routes": [
+        {
+          "route_id": "CC-001",
+          "name": "mBridge PvP",
+          "legs": 1,
+          "fee_bps": 13,
+          "settlement_time": "15 seconds",
+          "regulated": true,
+          "path": [],
+          "is_best": true,
+          "is_recommended": true,
+          "is_experimental": false
+        },
+        {
+          "route_id": "CC-002",
+          "name": "Project Nexus",
+          "legs": 1,
+          "fee_bps": 35,
+          "settlement_time": "60 seconds",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "CC-003",
+          "name": "Fiat Bridge (4 legs)",
+          "legs": 4,
+          "fee_bps": 40,
+          "settlement_time": "8 hours",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        }
+      ],
+      "execution_time_ms": 0.000476837158203125,
+      "error": ""
+    },
+    {
+      "scenario_id": "T009",
+      "scenario_name": "USD to USDC On-Ramp",
+      "passed": true,
+      "routes_found": 3,
+      "best_route": {
+        "route_id": "FS-001",
+        "name": "Circle On-Ramp",
+        "legs": 1,
+        "fee_bps": 0,
+        "settlement_time": "1 hour",
+        "regulated": true,
+        "path": [],
+        "is_best": true,
+        "is_recommended": false,
+        "is_experimental": false
+      },
+      "all_routes": [
+        {
+          "route_id": "FS-001",
+          "name": "Circle On-Ramp",
+          "legs": 1,
+          "fee_bps": 0,
+          "settlement_time": "1 hour",
+          "regulated": true,
+          "path": [],
+          "is_best": true,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "FS-002",
+          "name": "Coinbase Prime",
+          "legs": 1,
+          "fee_bps": 20,
+          "settlement_time": "2 hours",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "FS-003",
+          "name": "FX + On-Ramp",
+          "legs": 2,
+          "fee_bps": 50,
+          "settlement_time": "5 hours",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        }
+      ],
+      "execution_time_ms": 0.000476837158203125,
+      "error": ""
+    },
+    {
+      "scenario_id": "T010",
+      "scenario_name": "EUR to EURC On-Ramp",
+      "passed": true,
+      "routes_found": 3,
+      "best_route": {
+        "route_id": "FS-001",
+        "name": "Circle On-Ramp",
+        "legs": 1,
+        "fee_bps": 0,
+        "settlement_time": "1 hour",
+        "regulated": true,
+        "path": [],
+        "is_best": true,
+        "is_recommended": false,
+        "is_experimental": false
+      },
+      "all_routes": [
+        {
+          "route_id": "FS-001",
+          "name": "Circle On-Ramp",
+          "legs": 1,
+          "fee_bps": 0,
+          "settlement_time": "1 hour",
+          "regulated": true,
+          "path": [],
+          "is_best": true,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "FS-002",
+          "name": "Coinbase Prime",
+          "legs": 1,
+          "fee_bps": 20,
+          "settlement_time": "2 hours",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "FS-003",
+          "name": "FX + On-Ramp",
+          "legs": 2,
+          "fee_bps": 50,
+          "settlement_time": "5 hours",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        }
+      ],
+      "execution_time_ms": 0.0002384185791015625,
+      "error": ""
+    },
+    {
+      "scenario_id": "T011",
+      "scenario_name": "USDC to USD Off-Ramp",
+      "passed": true,
+      "routes_found": 3,
+      "best_route": {
+        "route_id": "SF-001",
+        "name": "Circle Off-Ramp",
+        "legs": 1,
+        "fee_bps": 0,
+        "settlement_time": "1 hour",
+        "regulated": true,
+        "path": [],
+        "is_best": true,
+        "is_recommended": false,
+        "is_experimental": false
+      },
+      "all_routes": [
+        {
+          "route_id": "SF-001",
+          "name": "Circle Off-Ramp",
+          "legs": 1,
+          "fee_bps": 0,
+          "settlement_time": "1 hour",
+          "regulated": true,
+          "path": [],
+          "is_best": true,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "SF-002",
+          "name": "CEX Off-Ramp",
+          "legs": 1,
+          "fee_bps": 25,
+          "settlement_time": "2 hours",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "SF-003",
+          "name": "Off-Ramp + FX",
+          "legs": 2,
+          "fee_bps": 50,
+          "settlement_time": "5 hours",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        }
+      ],
+      "execution_time_ms": 0.000476837158203125,
+      "error": ""
+    },
+    {
+      "scenario_id": "T012",
+      "scenario_name": "USDT to INR Off-Ramp",
+      "passed": true,
+      "routes_found": 3,
+      "best_route": {
+        "route_id": "SF-001",
+        "name": "Circle Off-Ramp",
+        "legs": 1,
+        "fee_bps": 0,
+        "settlement_time": "1 hour",
+        "regulated": true,
+        "path": [],
+        "is_best": true,
+        "is_recommended": false,
+        "is_experimental": false
+      },
+      "all_routes": [
+        {
+          "route_id": "SF-001",
+          "name": "Circle Off-Ramp",
+          "legs": 1,
+          "fee_bps": 0,
+          "settlement_time": "1 hour",
+          "regulated": true,
+          "path": [],
+          "is_best": true,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "SF-002",
+          "name": "CEX Off-Ramp",
+          "legs": 1,
+          "fee_bps": 25,
+          "settlement_time": "2 hours",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "SF-003",
+          "name": "Off-Ramp + FX",
+          "legs": 2,
+          "fee_bps": 50,
+          "settlement_time": "5 hours",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        }
+      ],
+      "execution_time_ms": 0.0002384185791015625,
+      "error": ""
+    },
+    {
+      "scenario_id": "T013",
+      "scenario_name": "USDC to USDT DEX",
+      "passed": true,
+      "routes_found": 3,
+      "best_route": {
+        "route_id": "SS-001",
+        "name": "Curve DEX",
+        "legs": 1,
+        "fee_bps": 4,
+        "settlement_time": "1 minute",
+        "regulated": false,
+        "path": [],
+        "is_best": true,
+        "is_recommended": false,
+        "is_experimental": false
+      },
+      "all_routes": [
+        {
+          "route_id": "SS-001",
+          "name": "Curve DEX",
+          "legs": 1,
+          "fee_bps": 4,
+          "settlement_time": "1 minute",
+          "regulated": false,
+          "path": [],
+          "is_best": true,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "SS-002",
+          "name": "Uniswap V3",
+          "legs": 1,
+          "fee_bps": 30,
+          "settlement_time": "1 minute",
+          "regulated": false,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "SS-003",
+          "name": "CEX Trade",
+          "legs": 1,
+          "fee_bps": 20,
+          "settlement_time": "10 seconds",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        }
+      ],
+      "execution_time_ms": 0.000476837158203125,
+      "error": ""
+    },
+    {
+      "scenario_id": "T014",
+      "scenario_name": "USDC to EURC Swap",
+      "passed": true,
+      "routes_found": 3,
+      "best_route": {
+        "route_id": "SS-001",
+        "name": "Curve DEX",
+        "legs": 1,
+        "fee_bps": 4,
+        "settlement_time": "1 minute",
+        "regulated": false,
+        "path": [],
+        "is_best": true,
+        "is_recommended": false,
+        "is_experimental": false
+      },
+      "all_routes": [
+        {
+          "route_id": "SS-001",
+          "name": "Curve DEX",
+          "legs": 1,
+          "fee_bps": 4,
+          "settlement_time": "1 minute",
+          "regulated": false,
+          "path": [],
+          "is_best": true,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "SS-002",
+          "name": "Uniswap V3",
+          "legs": 1,
+          "fee_bps": 30,
+          "settlement_time": "1 minute",
+          "regulated": false,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "SS-003",
+          "name": "CEX Trade",
+          "legs": 1,
+          "fee_bps": 20,
+          "settlement_time": "10 seconds",
+          "regulated": true,
+          "path": [],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        }
+      ],
+      "execution_time_ms": 0.0007152557373046875,
+      "error": ""
+    },
+    {
+      "scenario_id": "T015",
+      "scenario_name": "e-INR to USDC Bridge",
+      "passed": true,
+      "routes_found": 5,
+      "best_route": {
+        "route_id": "CS-005",
+        "name": "Atomic Swap",
+        "legs": 1,
+        "fee_bps": 5,
+        "settlement_time": "5 minutes",
+        "regulated": false,
+        "path": [
+          "CBDC",
+          "STABLECOIN"
+        ],
+        "is_best": true,
+        "is_recommended": false,
+        "is_experimental": true
+      },
+      "all_routes": [
+        {
+          "route_id": "CS-001",
+          "name": "Fiat Intermediary",
+          "legs": 2,
+          "fee_bps": 25,
+          "settlement_time": "5 hours",
+          "regulated": true,
+          "path": [
+            "CBDC",
+            "FIAT",
+            "STABLECOIN"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "CS-002",
+          "name": "CEX Bridge",
+          "legs": 2,
+          "fee_bps": 50,
+          "settlement_time": "2 hours",
+          "regulated": true,
+          "path": [
+            "CBDC",
+            "FIAT",
+            "STABLECOIN"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "CS-003",
+          "name": "mBridge + Off-Ramp",
+          "legs": 3,
+          "fee_bps": 38,
+          "settlement_time": "1 hour",
+          "regulated": true,
+          "path": [
+            "CBDC",
+            "CBDC",
+            "FIAT",
+            "STABLECOIN"
+          ],
+          "is_best": false,
+          "is_recommended": true,
+          "is_experimental": false
+        },
+        {
+          "route_id": "CS-004",
+          "name": "DEX Liquidity",
+          "legs": 2,
+          "fee_bps": 35,
+          "settlement_time": "10 minutes",
+          "regulated": false,
+          "path": [
+            "CBDC",
+            "FIAT",
+            "STABLECOIN"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": true
+        },
+        {
+          "route_id": "CS-005",
+          "name": "Atomic Swap",
+          "legs": 1,
+          "fee_bps": 5,
+          "settlement_time": "5 minutes",
+          "regulated": false,
+          "path": [
+            "CBDC",
+            "STABLECOIN"
+          ],
+          "is_best": true,
+          "is_recommended": false,
+          "is_experimental": true
+        }
+      ],
+      "execution_time_ms": 0.0007152557373046875,
+      "error": ""
+    },
+    {
+      "scenario_id": "T016",
+      "scenario_name": "e-CNY to USDT mBridge",
+      "passed": true,
+      "routes_found": 5,
+      "best_route": {
+        "route_id": "CS-005",
+        "name": "Atomic Swap",
+        "legs": 1,
+        "fee_bps": 5,
+        "settlement_time": "5 minutes",
+        "regulated": false,
+        "path": [
+          "CBDC",
+          "STABLECOIN"
+        ],
+        "is_best": true,
+        "is_recommended": false,
+        "is_experimental": true
+      },
+      "all_routes": [
+        {
+          "route_id": "CS-001",
+          "name": "Fiat Intermediary",
+          "legs": 2,
+          "fee_bps": 25,
+          "settlement_time": "5 hours",
+          "regulated": true,
+          "path": [
+            "CBDC",
+            "FIAT",
+            "STABLECOIN"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "CS-002",
+          "name": "CEX Bridge",
+          "legs": 2,
+          "fee_bps": 50,
+          "settlement_time": "2 hours",
+          "regulated": true,
+          "path": [
+            "CBDC",
+            "FIAT",
+            "STABLECOIN"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "CS-003",
+          "name": "mBridge + Off-Ramp",
+          "legs": 3,
+          "fee_bps": 38,
+          "settlement_time": "1 hour",
+          "regulated": true,
+          "path": [
+            "CBDC",
+            "CBDC",
+            "FIAT",
+            "STABLECOIN"
+          ],
+          "is_best": false,
+          "is_recommended": true,
+          "is_experimental": false
+        },
+        {
+          "route_id": "CS-004",
+          "name": "DEX Liquidity",
+          "legs": 2,
+          "fee_bps": 35,
+          "settlement_time": "10 minutes",
+          "regulated": false,
+          "path": [
+            "CBDC",
+            "FIAT",
+            "STABLECOIN"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": true
+        },
+        {
+          "route_id": "CS-005",
+          "name": "Atomic Swap",
+          "legs": 1,
+          "fee_bps": 5,
+          "settlement_time": "5 minutes",
+          "regulated": false,
+          "path": [
+            "CBDC",
+            "STABLECOIN"
+          ],
+          "is_best": true,
+          "is_recommended": false,
+          "is_experimental": true
+        }
+      ],
+      "execution_time_ms": 0.000476837158203125,
+      "error": ""
+    },
+    {
+      "scenario_id": "T017",
+      "scenario_name": "e-HKD to USDC Atomic",
+      "passed": true,
+      "routes_found": 5,
+      "best_route": {
+        "route_id": "CS-005",
+        "name": "Atomic Swap",
+        "legs": 1,
+        "fee_bps": 5,
+        "settlement_time": "5 minutes",
+        "regulated": false,
+        "path": [
+          "CBDC",
+          "STABLECOIN"
+        ],
+        "is_best": true,
+        "is_recommended": false,
+        "is_experimental": true
+      },
+      "all_routes": [
+        {
+          "route_id": "CS-001",
+          "name": "Fiat Intermediary",
+          "legs": 2,
+          "fee_bps": 25,
+          "settlement_time": "5 hours",
+          "regulated": true,
+          "path": [
+            "CBDC",
+            "FIAT",
+            "STABLECOIN"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "CS-002",
+          "name": "CEX Bridge",
+          "legs": 2,
+          "fee_bps": 50,
+          "settlement_time": "2 hours",
+          "regulated": true,
+          "path": [
+            "CBDC",
+            "FIAT",
+            "STABLECOIN"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "CS-003",
+          "name": "mBridge + Off-Ramp",
+          "legs": 3,
+          "fee_bps": 38,
+          "settlement_time": "1 hour",
+          "regulated": true,
+          "path": [
+            "CBDC",
+            "CBDC",
+            "FIAT",
+            "STABLECOIN"
+          ],
+          "is_best": false,
+          "is_recommended": true,
+          "is_experimental": false
+        },
+        {
+          "route_id": "CS-004",
+          "name": "DEX Liquidity",
+          "legs": 2,
+          "fee_bps": 35,
+          "settlement_time": "10 minutes",
+          "regulated": false,
+          "path": [
+            "CBDC",
+            "FIAT",
+            "STABLECOIN"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": true
+        },
+        {
+          "route_id": "CS-005",
+          "name": "Atomic Swap",
+          "legs": 1,
+          "fee_bps": 5,
+          "settlement_time": "5 minutes",
+          "regulated": false,
+          "path": [
+            "CBDC",
+            "STABLECOIN"
+          ],
+          "is_best": true,
+          "is_recommended": false,
+          "is_experimental": true
+        }
+      ],
+      "execution_time_ms": 0.000476837158203125,
+      "error": ""
+    },
+    {
+      "scenario_id": "T018",
+      "scenario_name": "e-SGD to XSGD Direct",
+      "passed": true,
+      "routes_found": 5,
+      "best_route": {
+        "route_id": "CS-005",
+        "name": "Atomic Swap",
+        "legs": 1,
+        "fee_bps": 5,
+        "settlement_time": "5 minutes",
+        "regulated": false,
+        "path": [
+          "CBDC",
+          "STABLECOIN"
+        ],
+        "is_best": true,
+        "is_recommended": false,
+        "is_experimental": true
+      },
+      "all_routes": [
+        {
+          "route_id": "CS-001",
+          "name": "Fiat Intermediary",
+          "legs": 2,
+          "fee_bps": 25,
+          "settlement_time": "5 hours",
+          "regulated": true,
+          "path": [
+            "CBDC",
+            "FIAT",
+            "STABLECOIN"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "CS-002",
+          "name": "CEX Bridge",
+          "legs": 2,
+          "fee_bps": 50,
+          "settlement_time": "2 hours",
+          "regulated": true,
+          "path": [
+            "CBDC",
+            "FIAT",
+            "STABLECOIN"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "CS-003",
+          "name": "mBridge + Off-Ramp",
+          "legs": 3,
+          "fee_bps": 38,
+          "settlement_time": "1 hour",
+          "regulated": true,
+          "path": [
+            "CBDC",
+            "CBDC",
+            "FIAT",
+            "STABLECOIN"
+          ],
+          "is_best": false,
+          "is_recommended": true,
+          "is_experimental": false
+        },
+        {
+          "route_id": "CS-004",
+          "name": "DEX Liquidity",
+          "legs": 2,
+          "fee_bps": 35,
+          "settlement_time": "10 minutes",
+          "regulated": false,
+          "path": [
+            "CBDC",
+            "FIAT",
+            "STABLECOIN"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": true
+        },
+        {
+          "route_id": "CS-005",
+          "name": "Atomic Swap",
+          "legs": 1,
+          "fee_bps": 5,
+          "settlement_time": "5 minutes",
+          "regulated": false,
+          "path": [
+            "CBDC",
+            "STABLECOIN"
+          ],
+          "is_best": true,
+          "is_recommended": false,
+          "is_experimental": true
+        }
+      ],
+      "execution_time_ms": 0.000476837158203125,
+      "error": ""
+    },
+    {
+      "scenario_id": "T019",
+      "scenario_name": "USDC to e-INR Bridge",
+      "passed": true,
+      "routes_found": 5,
+      "best_route": {
+        "route_id": "SC-005",
+        "name": "Atomic Swap",
+        "legs": 1,
+        "fee_bps": 5,
+        "settlement_time": "5 minutes",
+        "regulated": false,
+        "path": [
+          "STABLECOIN",
+          "CBDC"
+        ],
+        "is_best": true,
+        "is_recommended": false,
+        "is_experimental": true
+      },
+      "all_routes": [
+        {
+          "route_id": "SC-001",
+          "name": "Fiat Intermediary",
+          "legs": 2,
+          "fee_bps": 25,
+          "settlement_time": "5 hours",
+          "regulated": true,
+          "path": [
+            "STABLECOIN",
+            "FIAT",
+            "CBDC"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "SC-002",
+          "name": "CEX Bridge",
+          "legs": 2,
+          "fee_bps": 50,
+          "settlement_time": "2 hours",
+          "regulated": true,
+          "path": [
+            "STABLECOIN",
+            "FIAT",
+            "CBDC"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "SC-003",
+          "name": "OTC Trade",
+          "legs": 1,
+          "fee_bps": 15,
+          "settlement_time": "T+1",
+          "regulated": true,
+          "path": [
+            "STABLECOIN",
+            "CBDC"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "SC-004",
+          "name": "Liquidity Pool",
+          "legs": 2,
+          "fee_bps": 40,
+          "settlement_time": "15 minutes",
+          "regulated": false,
+          "path": [
+            "STABLECOIN",
+            "FIAT",
+            "CBDC"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": true
+        },
+        {
+          "route_id": "SC-005",
+          "name": "Atomic Swap",
+          "legs": 1,
+          "fee_bps": 5,
+          "settlement_time": "5 minutes",
+          "regulated": false,
+          "path": [
+            "STABLECOIN",
+            "CBDC"
+          ],
+          "is_best": true,
+          "is_recommended": false,
+          "is_experimental": true
+        }
+      ],
+      "execution_time_ms": 0.0035762786865234375,
+      "error": ""
+    },
+    {
+      "scenario_id": "T020",
+      "scenario_name": "USDT to e-CNY OTC",
+      "passed": true,
+      "routes_found": 5,
+      "best_route": {
+        "route_id": "SC-005",
+        "name": "Atomic Swap",
+        "legs": 1,
+        "fee_bps": 5,
+        "settlement_time": "5 minutes",
+        "regulated": false,
+        "path": [
+          "STABLECOIN",
+          "CBDC"
+        ],
+        "is_best": true,
+        "is_recommended": false,
+        "is_experimental": true
+      },
+      "all_routes": [
+        {
+          "route_id": "SC-001",
+          "name": "Fiat Intermediary",
+          "legs": 2,
+          "fee_bps": 25,
+          "settlement_time": "5 hours",
+          "regulated": true,
+          "path": [
+            "STABLECOIN",
+            "FIAT",
+            "CBDC"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "SC-002",
+          "name": "CEX Bridge",
+          "legs": 2,
+          "fee_bps": 50,
+          "settlement_time": "2 hours",
+          "regulated": true,
+          "path": [
+            "STABLECOIN",
+            "FIAT",
+            "CBDC"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "SC-003",
+          "name": "OTC Trade",
+          "legs": 1,
+          "fee_bps": 15,
+          "settlement_time": "T+1",
+          "regulated": true,
+          "path": [
+            "STABLECOIN",
+            "CBDC"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "SC-004",
+          "name": "Liquidity Pool",
+          "legs": 2,
+          "fee_bps": 40,
+          "settlement_time": "15 minutes",
+          "regulated": false,
+          "path": [
+            "STABLECOIN",
+            "FIAT",
+            "CBDC"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": true
+        },
+        {
+          "route_id": "SC-005",
+          "name": "Atomic Swap",
+          "legs": 1,
+          "fee_bps": 5,
+          "settlement_time": "5 minutes",
+          "regulated": false,
+          "path": [
+            "STABLECOIN",
+            "CBDC"
+          ],
+          "is_best": true,
+          "is_recommended": false,
+          "is_experimental": true
+        }
+      ],
+      "execution_time_ms": 0.0007152557373046875,
+      "error": ""
+    },
+    {
+      "scenario_id": "T021",
+      "scenario_name": "XSGD to e-SGD Direct",
+      "passed": true,
+      "routes_found": 5,
+      "best_route": {
+        "route_id": "SC-005",
+        "name": "Atomic Swap",
+        "legs": 1,
+        "fee_bps": 5,
+        "settlement_time": "5 minutes",
+        "regulated": false,
+        "path": [
+          "STABLECOIN",
+          "CBDC"
+        ],
+        "is_best": true,
+        "is_recommended": false,
+        "is_experimental": true
+      },
+      "all_routes": [
+        {
+          "route_id": "SC-001",
+          "name": "Fiat Intermediary",
+          "legs": 2,
+          "fee_bps": 25,
+          "settlement_time": "5 hours",
+          "regulated": true,
+          "path": [
+            "STABLECOIN",
+            "FIAT",
+            "CBDC"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "SC-002",
+          "name": "CEX Bridge",
+          "legs": 2,
+          "fee_bps": 50,
+          "settlement_time": "2 hours",
+          "regulated": true,
+          "path": [
+            "STABLECOIN",
+            "FIAT",
+            "CBDC"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "SC-003",
+          "name": "OTC Trade",
+          "legs": 1,
+          "fee_bps": 15,
+          "settlement_time": "T+1",
+          "regulated": true,
+          "path": [
+            "STABLECOIN",
+            "CBDC"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "SC-004",
+          "name": "Liquidity Pool",
+          "legs": 2,
+          "fee_bps": 40,
+          "settlement_time": "15 minutes",
+          "regulated": false,
+          "path": [
+            "STABLECOIN",
+            "FIAT",
+            "CBDC"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": true
+        },
+        {
+          "route_id": "SC-005",
+          "name": "Atomic Swap",
+          "legs": 1,
+          "fee_bps": 5,
+          "settlement_time": "5 minutes",
+          "regulated": false,
+          "path": [
+            "STABLECOIN",
+            "CBDC"
+          ],
+          "is_best": true,
+          "is_recommended": false,
+          "is_experimental": true
+        }
+      ],
+      "execution_time_ms": 0.000476837158203125,
+      "error": ""
+    },
+    {
+      "scenario_id": "T022",
+      "scenario_name": "EURC to e-EUR Future",
+      "passed": true,
+      "routes_found": 5,
+      "best_route": {
+        "route_id": "SC-005",
+        "name": "Atomic Swap",
+        "legs": 1,
+        "fee_bps": 5,
+        "settlement_time": "5 minutes",
+        "regulated": false,
+        "path": [
+          "STABLECOIN",
+          "CBDC"
+        ],
+        "is_best": true,
+        "is_recommended": false,
+        "is_experimental": true
+      },
+      "all_routes": [
+        {
+          "route_id": "SC-001",
+          "name": "Fiat Intermediary",
+          "legs": 2,
+          "fee_bps": 25,
+          "settlement_time": "5 hours",
+          "regulated": true,
+          "path": [
+            "STABLECOIN",
+            "FIAT",
+            "CBDC"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "SC-002",
+          "name": "CEX Bridge",
+          "legs": 2,
+          "fee_bps": 50,
+          "settlement_time": "2 hours",
+          "regulated": true,
+          "path": [
+            "STABLECOIN",
+            "FIAT",
+            "CBDC"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "SC-003",
+          "name": "OTC Trade",
+          "legs": 1,
+          "fee_bps": 15,
+          "settlement_time": "T+1",
+          "regulated": true,
+          "path": [
+            "STABLECOIN",
+            "CBDC"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": false
+        },
+        {
+          "route_id": "SC-004",
+          "name": "Liquidity Pool",
+          "legs": 2,
+          "fee_bps": 40,
+          "settlement_time": "15 minutes",
+          "regulated": false,
+          "path": [
+            "STABLECOIN",
+            "FIAT",
+            "CBDC"
+          ],
+          "is_best": false,
+          "is_recommended": false,
+          "is_experimental": true
+        },
+        {
+          "route_id": "SC-005",
+          "name": "Atomic Swap",
+          "legs": 1,
+          "fee_bps": 5,
+          "settlement_time": "5 minutes",
+          "regulated": false,
+          "path": [
+            "STABLECOIN",
+            "CBDC"
+          ],
+          "is_best": true,
+          "is_recommended": false,
+          "is_experimental": true
+        }
+      ],
+      "execution_time_ms": 0.000476837158203125,
+      "error": ""
+    }
+  ]
+}

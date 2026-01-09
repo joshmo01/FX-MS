@@ -1,0 +1,417 @@
+[
+  {
+    "log_id": "LOG-06879990",
+    "deal_id": "DEAL-20251214-0001",
+    "action": "CREATED",
+    "actor": "treasury_user",
+    "timestamp": "2025-12-14T17:41:08.453766",
+    "old_values": null,
+    "new_values": {
+      "deal_id": "DEAL-20251214-0001",
+      "currency_pair": "USDINR",
+      "side": "SELL",
+      "buy_rate": 90.0,
+      "sell_rate": 91.0,
+      "spread_bps": 110.5,
+      "amount": 10000.0,
+      "available_amount": 10000.0,
+      "utilized_amount": 0,
+      "valid_from": "2025-12-14T13:12:00",
+      "valid_until": "2025-12-14T14:14:00",
+      "status": "EXPIRED",
+      "customer_tier": null,
+      "min_amount": 1000.0,
+      "max_amount_per_txn": null,
+      "created_by": "treasury_user",
+      "created_at": "2025-12-14T17:41:08.452611",
+      "updated_at": "2025-12-14T17:42:15.133534",
+      "submitted_by": "treasury_user",
+      "submitted_at": "2025-12-14T17:42:12.778087",
+      "approved_by": "senior_treasury",
+      "approved_at": "2025-12-14T17:42:15.122146",
+      "rejected_by": null,
+      "rejected_at": null,
+      "rejection_reason": null,
+      "cancelled_by": null,
+      "cancelled_at": null,
+      "cancellation_reason": null,
+      "notes": null
+    },
+    "details": "Deal created for USDINR"
+  },
+  {
+    "log_id": "LOG-FE0B2E90",
+    "deal_id": "DEAL-20251214-0001",
+    "action": "SUBMITTED",
+    "actor": "treasury_user",
+    "timestamp": "2025-12-14T17:42:12.778418",
+    "old_values": {
+      "status": "DRAFT"
+    },
+    "new_values": {
+      "status": "PENDING_APPROVAL"
+    },
+    "details": "Deal submitted for approval"
+  },
+  {
+    "log_id": "LOG-E922D9A5",
+    "deal_id": "DEAL-20251214-0001",
+    "action": "APPROVED",
+    "actor": "senior_treasury",
+    "timestamp": "2025-12-14T17:42:15.122325",
+    "old_values": {
+      "status": "PENDING_APPROVAL"
+    },
+    "new_values": {
+      "status": "ACTIVE",
+      "approved_by": "senior_treasury"
+    },
+    "details": "Deal approved"
+  },
+  {
+    "log_id": "LOG-5D639D7C",
+    "deal_id": "DEAL-20251214-0001",
+    "action": "EXPIRED",
+    "actor": "SYSTEM",
+    "timestamp": "2025-12-14T17:42:15.133552",
+    "old_values": {
+      "status": "ACTIVE"
+    },
+    "new_values": {
+      "status": "EXPIRED"
+    },
+    "details": "Deal expired automatically"
+  },
+  {
+    "log_id": "LOG-EB5FF728",
+    "deal_id": "DEAL-20251214-0002",
+    "action": "CREATED",
+    "actor": "treasury_user",
+    "timestamp": "2025-12-14T23:36:22.520889",
+    "old_values": null,
+    "new_values": {
+      "deal_id": "DEAL-20251214-0002",
+      "currency_pair": "USDINR",
+      "side": "SELL",
+      "buy_rate": 84.4,
+      "sell_rate": 84.55,
+      "spread_bps": 17.76,
+      "amount": 500000.0,
+      "available_amount": 500000.0,
+      "utilized_amount": 0,
+      "valid_from": "2025-12-15T10:00:00",
+      "valid_until": "2025-12-15T11:00:00",
+      "status": "ACTIVE",
+      "customer_tier": null,
+      "min_amount": 1000.0,
+      "max_amount_per_txn": null,
+      "created_by": "treasury_user",
+      "created_at": "2025-12-14T23:36:22.514420",
+      "updated_at": "2025-12-14T23:39:28.041236",
+      "submitted_by": "treasury_user",
+      "submitted_at": "2025-12-14T23:36:28.248427",
+      "approved_by": "senior_treasury",
+      "approved_at": "2025-12-14T23:39:28.041229",
+      "rejected_by": null,
+      "rejected_at": null,
+      "rejection_reason": null,
+      "cancelled_by": null,
+      "cancelled_at": null,
+      "cancellation_reason": null,
+      "notes": null
+    },
+    "details": "Deal created for USDINR"
+  },
+  {
+    "log_id": "LOG-C4F3E724",
+    "deal_id": "DEAL-20251214-0002",
+    "action": "SUBMITTED",
+    "actor": "treasury_user",
+    "timestamp": "2025-12-14T23:36:28.248682",
+    "old_values": {
+      "status": "DRAFT"
+    },
+    "new_values": {
+      "status": "PENDING_APPROVAL"
+    },
+    "details": "Deal submitted for approval"
+  },
+  {
+    "log_id": "LOG-56B141F4",
+    "deal_id": "DEAL-20251214-0002",
+    "action": "APPROVED",
+    "actor": "senior_treasury",
+    "timestamp": "2025-12-14T23:39:28.043504",
+    "old_values": {
+      "status": "PENDING_APPROVAL"
+    },
+    "new_values": {
+      "status": "ACTIVE",
+      "approved_by": "senior_treasury"
+    },
+    "details": "Deal approved"
+  },
+  {
+    "log_id": "LOG-66BD6259",
+    "deal_id": "DEAL-20251214-0002",
+    "action": "EXPIRED",
+    "actor": "SYSTEM",
+    "timestamp": "2025-12-20T16:42:15.884602",
+    "old_values": {
+      "status": "ACTIVE"
+    },
+    "new_values": {
+      "status": "EXPIRED"
+    },
+    "details": "Deal expired automatically"
+  },
+  {
+    "log_id": "LOG-9D701901",
+    "deal_id": "DEAL-20251222-0001",
+    "action": "CREATED",
+    "actor": "treasury_user",
+    "timestamp": "2025-12-22T13:41:32.467340",
+    "old_values": null,
+    "new_values": {
+      "deal_id": "DEAL-20251222-0001",
+      "currency_pair": "USDINR",
+      "side": "SELL",
+      "buy_rate": 84.4,
+      "sell_rate": 84.55,
+      "spread_bps": 17.76,
+      "amount": 500000.0,
+      "available_amount": 500000.0,
+      "utilized_amount": 0,
+      "valid_from": "2025-12-22T19:10:00",
+      "valid_until": "2025-12-22T22:11:00",
+      "status": "ACTIVE",
+      "customer_tier": null,
+      "min_amount": 1000.0,
+      "max_amount_per_txn": null,
+      "created_by": "treasury_user",
+      "created_at": "2025-12-22T13:41:32.466549",
+      "updated_at": "2025-12-22T14:05:01.851301",
+      "submitted_by": "treasury_user",
+      "submitted_at": "2025-12-22T14:04:59.804204",
+      "approved_by": "senior_treasury",
+      "approved_at": "2025-12-22T14:05:01.851295",
+      "rejected_by": null,
+      "rejected_at": null,
+      "rejection_reason": null,
+      "cancelled_by": null,
+      "cancelled_at": null,
+      "cancellation_reason": null,
+      "notes": null
+    },
+    "details": "Deal created for USDINR"
+  },
+  {
+    "log_id": "LOG-99268735",
+    "deal_id": "DEAL-20251222-0001",
+    "action": "SUBMITTED",
+    "actor": "treasury_user",
+    "timestamp": "2025-12-22T14:04:59.805752",
+    "old_values": {
+      "status": "DRAFT"
+    },
+    "new_values": {
+      "status": "PENDING_APPROVAL"
+    },
+    "details": "Deal submitted for approval"
+  },
+  {
+    "log_id": "LOG-68F637F9",
+    "deal_id": "DEAL-20251222-0001",
+    "action": "APPROVED",
+    "actor": "senior_treasury",
+    "timestamp": "2025-12-22T14:05:01.851648",
+    "old_values": {
+      "status": "PENDING_APPROVAL"
+    },
+    "new_values": {
+      "status": "ACTIVE",
+      "approved_by": "senior_treasury"
+    },
+    "details": "Deal approved"
+  },
+  {
+    "log_id": "LOG-FA3C25F3",
+    "deal_id": "DEAL-20251222-0002",
+    "action": "CREATED",
+    "actor": "treasury_user",
+    "timestamp": "2025-12-22T16:16:36.979315",
+    "old_values": null,
+    "new_values": {
+      "deal_id": "DEAL-20251222-0002",
+      "currency_pair": "USDINR",
+      "side": "SELL",
+      "buy_rate": 83.1077,
+      "sell_rate": 83.2325,
+      "spread_bps": 15.01,
+      "amount": 100000.0,
+      "available_amount": 100000.0,
+      "utilized_amount": 0,
+      "valid_from": "2025-12-22T21:46:00",
+      "valid_until": "2025-12-22T22:46:00",
+      "status": "ACTIVE",
+      "customer_tier": null,
+      "min_amount": 1000.0,
+      "max_amount_per_txn": null,
+      "created_by": "treasury_user",
+      "created_at": "2025-12-22T16:16:36.977951",
+      "updated_at": "2025-12-22T16:29:22.670281",
+      "submitted_by": "treasury_user",
+      "submitted_at": "2025-12-22T16:29:18.960956",
+      "approved_by": "senior_treasury",
+      "approved_at": "2025-12-22T16:29:22.670272",
+      "rejected_by": null,
+      "rejected_at": null,
+      "rejection_reason": null,
+      "cancelled_by": null,
+      "cancelled_at": null,
+      "cancellation_reason": null,
+      "notes": null
+    },
+    "details": "Deal created for USDINR"
+  },
+  {
+    "log_id": "LOG-DCA36323",
+    "deal_id": "DEAL-20251222-0002",
+    "action": "SUBMITTED",
+    "actor": "treasury_user",
+    "timestamp": "2025-12-22T16:29:18.962282",
+    "old_values": {
+      "status": "DRAFT"
+    },
+    "new_values": {
+      "status": "PENDING_APPROVAL"
+    },
+    "details": "Deal submitted for approval"
+  },
+  {
+    "log_id": "LOG-48250020",
+    "deal_id": "DEAL-20251222-0002",
+    "action": "APPROVED",
+    "actor": "senior_treasury",
+    "timestamp": "2025-12-22T16:29:22.671056",
+    "old_values": {
+      "status": "PENDING_APPROVAL"
+    },
+    "new_values": {
+      "status": "ACTIVE",
+      "approved_by": "senior_treasury"
+    },
+    "details": "Deal approved"
+  },
+  {
+    "log_id": "LOG-F1D2033C",
+    "deal_id": "DEAL-20251222-0003",
+    "action": "CREATED",
+    "actor": "treasury_user",
+    "timestamp": "2025-12-22T23:10:15.032228",
+    "old_values": null,
+    "new_values": {
+      "deal_id": "DEAL-20251222-0003",
+      "currency_pair": "USDJPY",
+      "side": "SELL",
+      "buy_rate": 154.5368,
+      "sell_rate": 154.769,
+      "spread_bps": 15.01,
+      "amount": 100000.0,
+      "available_amount": 100000.0,
+      "utilized_amount": 0,
+      "valid_from": "2025-12-23T04:39:00",
+      "valid_until": "2025-12-23T06:39:00",
+      "status": "DRAFT",
+      "customer_tier": null,
+      "min_amount": 1000.0,
+      "max_amount_per_txn": null,
+      "created_by": "treasury_user",
+      "created_at": "2025-12-22T23:10:15.030351",
+      "updated_at": "2025-12-22T23:10:15.030351",
+      "submitted_by": null,
+      "submitted_at": null,
+      "approved_by": null,
+      "approved_at": null,
+      "rejected_by": null,
+      "rejected_at": null,
+      "rejection_reason": null,
+      "cancelled_by": null,
+      "cancelled_at": null,
+      "cancellation_reason": null,
+      "notes": null
+    },
+    "details": "Deal created for USDJPY"
+  },
+  {
+    "log_id": "LOG-C88A273D",
+    "deal_id": "DEAL-20251222-0001",
+    "action": "EXPIRED",
+    "actor": "SYSTEM",
+    "timestamp": "2025-12-22T23:10:15.041092",
+    "old_values": {
+      "status": "ACTIVE"
+    },
+    "new_values": {
+      "status": "EXPIRED"
+    },
+    "details": "Deal expired automatically"
+  },
+  {
+    "log_id": "LOG-4E4AF6AF",
+    "deal_id": "DEAL-20251222-0002",
+    "action": "EXPIRED",
+    "actor": "SYSTEM",
+    "timestamp": "2025-12-22T23:10:15.041990",
+    "old_values": {
+      "status": "ACTIVE"
+    },
+    "new_values": {
+      "status": "EXPIRED"
+    },
+    "details": "Deal expired automatically"
+  },
+  {
+    "log_id": "LOG-BBB3953C",
+    "deal_id": "DEAL-20251222-0003",
+    "action": "SUBMITTED",
+    "actor": "treasury_user",
+    "timestamp": "2025-12-31T19:36:41.802285",
+    "old_values": {
+      "status": "DRAFT"
+    },
+    "new_values": {
+      "status": "PENDING_APPROVAL"
+    },
+    "details": "Deal submitted for approval"
+  },
+  {
+    "log_id": "LOG-B53ECE1B",
+    "deal_id": "DEAL-20251222-0003",
+    "action": "APPROVED",
+    "actor": "senior_treasury",
+    "timestamp": "2025-12-31T19:36:43.435679",
+    "old_values": {
+      "status": "PENDING_APPROVAL"
+    },
+    "new_values": {
+      "status": "ACTIVE",
+      "approved_by": "senior_treasury"
+    },
+    "details": "Deal approved"
+  },
+  {
+    "log_id": "LOG-C3B7FCB0",
+    "deal_id": "DEAL-20251222-0003",
+    "action": "EXPIRED",
+    "actor": "SYSTEM",
+    "timestamp": "2025-12-31T19:36:43.438422",
+    "old_values": {
+      "status": "ACTIVE"
+    },
+    "new_values": {
+      "status": "EXPIRED"
+    },
+    "details": "Deal expired automatically"
+  }
+]

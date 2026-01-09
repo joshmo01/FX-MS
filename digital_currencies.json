@@ -1,0 +1,320 @@
+{
+  "cbdc": {
+    "e-INR": {
+      "code": "e-INR",
+      "name": "Digital Rupee",
+      "issuer": "Reserve Bank of India",
+      "country": "India",
+      "fiat_currency": "INR",
+      "status": "PILOT",
+      "technology": "R3 Corda",
+      "is_active": true,
+      "decimal_places": 2,
+      "wallet_types": ["TOKEN", "ACCOUNT"],
+      "balance_limit": 200000,
+      "transaction_limit": 200000,
+      "settlement_type": "INSTANT",
+      "settlement_seconds": 5,
+      "operating_hours": "24x7",
+      "participating_banks": ["SBI", "HDFC", "ICICI", "KOTAK", "YES", "IDFC", "BOB", "UNION"],
+      "cross_border_enabled": false,
+      "offline_capable": true,
+      "compliance": {
+        "kyc_required": true,
+        "aml_screening": "BANK_LEVEL",
+        "transaction_monitoring": "REAL_TIME"
+      },
+      "fees": {
+        "issuance_bps": 0,
+        "redemption_bps": 0,
+        "transfer_bps": 0
+      }
+    },
+    "e-CNY": {
+      "code": "e-CNY",
+      "name": "Digital Yuan",
+      "issuer": "People's Bank of China",
+      "country": "China",
+      "fiat_currency": "CNY",
+      "status": "PILOT",
+      "technology": "Proprietary DLT",
+      "is_active": true,
+      "decimal_places": 2,
+      "wallet_types": ["HARDWARE", "SOFTWARE"],
+      "balance_limit": 50000,
+      "transaction_limit": 50000,
+      "settlement_type": "INSTANT",
+      "settlement_seconds": 3,
+      "operating_hours": "24x7",
+      "cross_border_enabled": true,
+      "mbridge_participant": true,
+      "compliance": {
+        "kyc_required": true,
+        "aml_screening": "CENTRAL_BANK",
+        "transaction_monitoring": "REAL_TIME"
+      },
+      "fees": {
+        "issuance_bps": 0,
+        "redemption_bps": 0,
+        "transfer_bps": 0
+      }
+    },
+    "e-HKD": {
+      "code": "e-HKD",
+      "name": "Digital Hong Kong Dollar",
+      "issuer": "Hong Kong Monetary Authority",
+      "country": "Hong Kong",
+      "fiat_currency": "HKD",
+      "status": "PILOT",
+      "technology": "R3 Corda",
+      "is_active": true,
+      "decimal_places": 2,
+      "settlement_type": "INSTANT",
+      "settlement_seconds": 5,
+      "cross_border_enabled": true,
+      "mbridge_participant": true,
+      "compliance": {
+        "kyc_required": true,
+        "aml_screening": "BANK_LEVEL"
+      },
+      "fees": {
+        "issuance_bps": 0,
+        "redemption_bps": 0,
+        "transfer_bps": 2
+      }
+    },
+    "e-THB": {
+      "code": "e-THB",
+      "name": "Digital Thai Baht",
+      "issuer": "Bank of Thailand",
+      "country": "Thailand",
+      "fiat_currency": "THB",
+      "status": "PILOT",
+      "technology": "Hyperledger",
+      "is_active": true,
+      "decimal_places": 2,
+      "settlement_type": "INSTANT",
+      "settlement_seconds": 5,
+      "cross_border_enabled": true,
+      "mbridge_participant": true,
+      "compliance": {
+        "kyc_required": true,
+        "aml_screening": "BANK_LEVEL"
+      },
+      "fees": {
+        "issuance_bps": 0,
+        "redemption_bps": 0,
+        "transfer_bps": 2
+      }
+    },
+    "e-AED": {
+      "code": "e-AED",
+      "name": "Digital Dirham",
+      "issuer": "Central Bank of UAE",
+      "country": "UAE",
+      "fiat_currency": "AED",
+      "status": "PILOT",
+      "technology": "R3 Corda",
+      "is_active": true,
+      "decimal_places": 2,
+      "settlement_type": "INSTANT",
+      "settlement_seconds": 5,
+      "cross_border_enabled": true,
+      "mbridge_participant": true,
+      "compliance": {
+        "kyc_required": true,
+        "aml_screening": "CENTRAL_BANK"
+      },
+      "fees": {
+        "issuance_bps": 0,
+        "redemption_bps": 0,
+        "transfer_bps": 3
+      }
+    },
+    "e-SGD": {
+      "code": "e-SGD",
+      "name": "Digital Singapore Dollar",
+      "issuer": "Monetary Authority of Singapore",
+      "country": "Singapore",
+      "fiat_currency": "SGD",
+      "status": "EXPERIMENTAL",
+      "technology": "Ethereum/Hyperledger",
+      "is_active": true,
+      "decimal_places": 2,
+      "settlement_type": "INSTANT",
+      "settlement_seconds": 10,
+      "cross_border_enabled": true,
+      "project_ubin": true,
+      "compliance": {
+        "kyc_required": true,
+        "aml_screening": "BANK_LEVEL"
+      },
+      "fees": {
+        "issuance_bps": 0,
+        "redemption_bps": 0,
+        "transfer_bps": 2
+      }
+    }
+  },
+  "stablecoins": {
+    "USDT": {
+      "code": "USDT",
+      "name": "Tether USD",
+      "issuer": "Tether Limited",
+      "type": "FIAT_BACKED",
+      "pegged_currency": "USD",
+      "peg_ratio": 1.0,
+      "is_active": true,
+      "decimal_places": 6,
+      "networks": [
+        {"chain": "ETHEREUM", "contract": "0xdAC17F958D2ee523a2206206994597C13D831ec7", "settlement_seconds": 180, "fee_usd": 15},
+        {"chain": "TRON", "contract": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", "settlement_seconds": 10, "fee_usd": 1},
+        {"chain": "SOLANA", "contract": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", "settlement_seconds": 5, "fee_usd": 0.01},
+        {"chain": "POLYGON", "contract": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F", "settlement_seconds": 10, "fee_usd": 0.1}
+      ],
+      "market_cap_usd": 95000000000,
+      "daily_volume_usd": 50000000000,
+      "reserve_attestation": "QUARTERLY",
+      "regulatory_status": "UNREGULATED",
+      "liquidity_score": 100,
+      "on_ramp_providers": ["KRAKEN", "BINANCE", "COINBASE"],
+      "off_ramp_providers": ["KRAKEN", "BINANCE", "CIRCLE"],
+      "compliance": {
+        "kyc_required": false,
+        "travel_rule_applicable": true,
+        "sanctions_screening": "PROVIDER_LEVEL"
+      },
+      "fees": {
+        "mint_bps": 10,
+        "redeem_bps": 10,
+        "transfer_bps": 0
+      }
+    },
+    "USDC": {
+      "code": "USDC",
+      "name": "USD Coin",
+      "issuer": "Circle",
+      "type": "FIAT_BACKED",
+      "pegged_currency": "USD",
+      "peg_ratio": 1.0,
+      "is_active": true,
+      "decimal_places": 6,
+      "networks": [
+        {"chain": "ETHEREUM", "contract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", "settlement_seconds": 180, "fee_usd": 15},
+        {"chain": "SOLANA", "contract": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", "settlement_seconds": 5, "fee_usd": 0.01},
+        {"chain": "POLYGON", "contract": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174", "settlement_seconds": 10, "fee_usd": 0.1},
+        {"chain": "AVALANCHE", "contract": "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E", "settlement_seconds": 5, "fee_usd": 0.1}
+      ],
+      "market_cap_usd": 45000000000,
+      "daily_volume_usd": 8000000000,
+      "reserve_attestation": "MONTHLY",
+      "regulatory_status": "REGULATED_US",
+      "regulated_by": ["NYDFS", "FinCEN"],
+      "liquidity_score": 95,
+      "on_ramp_providers": ["CIRCLE", "COINBASE", "KRAKEN"],
+      "off_ramp_providers": ["CIRCLE", "COINBASE"],
+      "compliance": {
+        "kyc_required": true,
+        "travel_rule_applicable": true,
+        "sanctions_screening": "CHAINALYSIS"
+      },
+      "fees": {
+        "mint_bps": 0,
+        "redeem_bps": 0,
+        "transfer_bps": 0
+      }
+    },
+    "EURC": {
+      "code": "EURC",
+      "name": "Euro Coin",
+      "issuer": "Circle",
+      "type": "FIAT_BACKED",
+      "pegged_currency": "EUR",
+      "peg_ratio": 1.0,
+      "is_active": true,
+      "decimal_places": 6,
+      "networks": [
+        {"chain": "ETHEREUM", "contract": "0x1aBaEA1f7C830bD89Acc67eC4af516284b1bC33c", "settlement_seconds": 180, "fee_usd": 15},
+        {"chain": "AVALANCHE", "contract": "0xC891EB4cbdEFf6e073e859e987815Ed1505c2ACD", "settlement_seconds": 5, "fee_usd": 0.1}
+      ],
+      "market_cap_usd": 100000000,
+      "daily_volume_usd": 50000000,
+      "reserve_attestation": "MONTHLY",
+      "regulatory_status": "MICA_COMPLIANT",
+      "liquidity_score": 60,
+      "compliance": {
+        "kyc_required": true,
+        "travel_rule_applicable": true,
+        "sanctions_screening": "CHAINALYSIS"
+      },
+      "fees": {
+        "mint_bps": 0,
+        "redeem_bps": 0,
+        "transfer_bps": 0
+      }
+    },
+    "PYUSD": {
+      "code": "PYUSD",
+      "name": "PayPal USD",
+      "issuer": "Paxos Trust",
+      "type": "FIAT_BACKED",
+      "pegged_currency": "USD",
+      "peg_ratio": 1.0,
+      "is_active": true,
+      "decimal_places": 6,
+      "networks": [
+        {"chain": "ETHEREUM", "contract": "0x6c3ea9036406852006290770BEdFcAbA0e23A0e8", "settlement_seconds": 180, "fee_usd": 15},
+        {"chain": "SOLANA", "contract": "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo", "settlement_seconds": 5, "fee_usd": 0.01}
+      ],
+      "market_cap_usd": 500000000,
+      "daily_volume_usd": 100000000,
+      "reserve_attestation": "MONTHLY",
+      "regulatory_status": "REGULATED_US",
+      "regulated_by": ["NYDFS"],
+      "liquidity_score": 50,
+      "compliance": {
+        "kyc_required": true,
+        "travel_rule_applicable": true,
+        "sanctions_screening": "PAXOS"
+      },
+      "fees": {
+        "mint_bps": 0,
+        "redeem_bps": 0,
+        "transfer_bps": 0
+      }
+    },
+    "XSGD": {
+      "code": "XSGD",
+      "name": "StraitsX SGD",
+      "issuer": "StraitsX",
+      "type": "FIAT_BACKED",
+      "pegged_currency": "SGD",
+      "peg_ratio": 1.0,
+      "is_active": true,
+      "decimal_places": 6,
+      "networks": [
+        {"chain": "ETHEREUM", "contract": "0x70e8dE73cE538DA2bEEd35d14187F6959a8ecA96", "settlement_seconds": 180, "fee_usd": 15},
+        {"chain": "POLYGON", "contract": "0xDC3326e71D45186F113a2F448984CA0e8D201995", "settlement_seconds": 10, "fee_usd": 0.1}
+      ],
+      "market_cap_usd": 50000000,
+      "daily_volume_usd": 5000000,
+      "reserve_attestation": "MONTHLY",
+      "regulatory_status": "MAS_LICENSED",
+      "liquidity_score": 40,
+      "compliance": {
+        "kyc_required": true,
+        "travel_rule_applicable": true,
+        "sanctions_screening": "PROVIDER_LEVEL"
+      },
+      "fees": {
+        "mint_bps": 0,
+        "redeem_bps": 10,
+        "transfer_bps": 0
+      }
+    }
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "last_updated": "2025-01-01T00:00:00Z"
+  }
+}

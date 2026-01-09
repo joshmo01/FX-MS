@@ -1,40 +1,15 @@
-# Python
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
+*.pyc
+*.pyo
 .venv/
 venv/
-ENV/
-env/
-.eggs/
+path/
+.env
 *.egg-info/
 dist/
 build/
-
-# Environment
-.env
-.env.local
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# OS
 .DS_Store
-Thumbs.db
 
-# Testing
-.coverage
-htmlcov/
-.pytest_cache/
-
-# Node (if any frontend)
-node_modules/
-*.log
-
-# Misc
-*.zip
+# Test output
+test_results/
+_ul

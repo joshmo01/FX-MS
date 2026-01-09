@@ -1,0 +1,82 @@
+{
+  "USDINR": {
+    "pair": "USDINR",
+    "bid": 84.42,
+    "ask": 84.58,
+    "mid": 84.5,
+    "min_margin_bps": 10,
+    "position": "LONG"
+  },
+  "EURINR": {
+    "pair": "EURINR",
+    "bid": 89.1,
+    "ask": 89.3,
+    "mid": 89.2,
+    "min_margin_bps": 12,
+    "position": "NEUTRAL"
+  },
+  "GBPINR": {
+    "pair": "GBPINR",
+    "bid": 106.35,
+    "ask": 106.65,
+    "mid": 106.5,
+    "min_margin_bps": 15,
+    "position": "SHORT"
+  },
+  "EURUSD": {
+    "pair": "EURUSD",
+    "bid": 1.055,
+    "ask": 1.0564,
+    "mid": 1.0557,
+    "min_margin_bps": 5,
+    "position": "LONG"
+  },
+  "AEDINR": {
+    "pair": "AEDINR",
+    "bid": 22.98,
+    "ask": 23.04,
+    "mid": 23.01,
+    "min_margin_bps": 18,
+    "position": "NEUTRAL"
+  },
+  "GBPUSD": {
+    "pair": "GBPUSD",
+    "bid": 1.259,
+    "ask": 1.261,
+    "mid": 1.26,
+    "min_margin_bps": 8,
+    "position": "NEUTRAL"
+  },
+  "USDJPY": {
+    "pair": "USDJPY",
+    "bid": 149.8,
+    "ask": 150.1,
+    "mid": 149.95,
+    "min_margin_bps": 6,
+    "position": "SHORT"
+  },
+  "USDSGD": {
+    "pair": "USDSGD",
+    "bid": 1.342,
+    "ask": 1.344,
+    "mid": 1.343,
+    "min_margin_bps": 10,
+    "position": "NEUTRAL"
+  },
+  "USDAED": {
+    "pair": "USDAED",
+    "bid": 3.6725,
+    "ask": 3.6735,
+    "mid": 3.673,
+    "min_margin_bps": 5,
+    "position": "NEUTRAL"
+  },
+  "USDCNY": {
+    "pair": "USDCNY",
+    "bid": 7.238,
+    "ask": 7.242,
+    "mid": 7.24,
+    "min_margin_bps": 12,
+    "position": "NEUTRAL"
+  }
+}
