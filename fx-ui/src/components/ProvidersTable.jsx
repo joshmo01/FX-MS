@@ -15,6 +15,7 @@ const ProvidersTable = ({ onUpdate }) => {
 
   useEffect(() => {
     fetchProviders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -35,7 +36,7 @@ const ProvidersTable = ({ onUpdate }) => {
       const response = await getAdminResource('fx-providers');
       setProviders(response.data.data || []);
       if (onUpdate) onUpdate();
-    } catch (error) {
+    } catch (_error) {
       showNotification('Failed to load providers', 'error');
     } finally {
       setLoading(false);
@@ -120,7 +121,7 @@ const ProvidersTable = ({ onUpdate }) => {
     try {
       await reloadAdminResource('fx-providers');
       showNotification('Configuration reloaded successfully', 'success');
-    } catch (error) {
+    } catch (_error) {
       showNotification('Failed to reload configuration', 'error');
     }
   };

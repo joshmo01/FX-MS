@@ -15,6 +15,7 @@ const RatesTable = ({ onUpdate }) => {
 
   useEffect(() => {
     fetchRates();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -34,7 +35,7 @@ const RatesTable = ({ onUpdate }) => {
       const response = await getAdminResource('treasury-rates');
       setRates(response.data.data || []);
       if (onUpdate) onUpdate();
-    } catch (error) {
+    } catch (_error) {
       showNotification('Failed to load rates', 'error');
     } finally {
       setLoading(false);
@@ -107,7 +108,7 @@ const RatesTable = ({ onUpdate }) => {
     try {
       await reloadAdminResource('treasury-rates');
       showNotification('Configuration reloaded successfully', 'success');
-    } catch (error) {
+    } catch (_error) {
       showNotification('Failed to reload configuration', 'error');
     }
   };

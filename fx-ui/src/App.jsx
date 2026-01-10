@@ -80,21 +80,14 @@ function App() {
   const [segments, setSegments] = useState([]);
   const [tiers, setTiers] = useState([]);
 
-  // Rules state
-  const [rules, setRules] = useState([]);
-  const [showRuleCreate, setShowRuleCreate] = useState(false);
-  const [ruleFilter, setRuleFilter] = useState('ALL'); // ALL, PROVIDER_SELECTION, MARGIN_ADJUSTMENT
-
-  useEffect(() => { fetchData(); }, []);
-
   const fetchData = async () => {
     setLoading(true);
     try {
       const [dealsRes, ratesRes, cbdcRes, stableRes] = await Promise.all([
-        api.getDeals({}).catch(e => ({ data: { deals: [] } })),
-        api.getTreasuryRates().catch(e => ({ data: { rates: {} } })),
-        api.getCBDCs().catch(e => ({ data: { cbdc: [] } })),
-        api.getStablecoins().catch(e => ({ data: { stablecoins: [] } })),
+        api.getDeals({}).catch(() => ({ data: { deals: [] } })),
+        api.getTreasuryRates().catch(() => ({ data: { rates: {} } })),
+        api.getCBDCs().catch(() => ({ data: { cbdc: [] } })),
+        api.getStablecoins().catch(() => ({ data: { stablecoins: [] } })),
       ]);
 
       setDeals(dealsRes.data?.deals || []);
@@ -106,24 +99,21 @@ function App() {
       try {
         const segRes = await api.getSegments();
         setSegments(segRes.data || []);
-      } catch (e) { console.log('Segments fetch error:', e); }
+      } catch (_e) { console.log('Segments fetch error'); }
 
       try {
         const tierRes = await api.getTiers();
         setTiers(tierRes.data || []);
-      } catch (e) { console.log('Tiers fetch error:', e); }
-
-      // Fetch rules
-      try {
-        const rulesRes = await api.getRules();
-        setRules(rulesRes.data || []);
-      } catch (e) { console.log('Rules fetch error:', e); }
+      } catch (_e) { console.log('Tiers fetch error'); }
 
     } catch (e) {
       console.error('Fetch error:', e);
     }
     setLoading(false);
   };
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { fetchData(); }, []);
 
   const handleCreateDeal = async (e) => {
     e.preventDefault();
@@ -419,7 +409,7 @@ function App() {
     try {
       const res = await api.sendChatMessage(msg);
       setChatMessages(m => [...m, { role: 'assistant', content: res.data.response || res.data.detail || 'Error' }]);
-    } catch (e) {
+    } catch (_e) {
       setChatMessages(m => [...m, { role: 'assistant', content: 'Chat API not available. Make sure ANTHROPIC_API_KEY is set.' }]);
     }
   };
@@ -452,25 +442,6 @@ function App() {
       target_currency: target,
     });
     setTab('pricing');
-  };
-
-  const handleToggleRule = async (ruleId) => {
-    try {
-      await api.toggleRule(ruleId);
-      fetchData(); // Refresh rules
-    } catch (e) {
-      alert('Error toggling rule: ' + e.message);
-    }
-  };
-
-  const handleDeleteRule = async (ruleId) => {
-    if (!confirm(`Are you sure you want to delete rule ${ruleId}?`)) return;
-    try {
-      await api.deleteRule(ruleId);
-      fetchData(); // Refresh rules
-    } catch (e) {
-      alert('Error deleting rule: ' + e.message);
-    }
   };
 
   const activeDeals = deals.filter(d => d.status === 'ACTIVE').length;

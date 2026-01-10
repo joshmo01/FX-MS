@@ -13,6 +13,7 @@ const CustomerTiersTable = ({ onUpdate }) => {
 
   useEffect(() => {
     fetchTiers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -33,7 +34,7 @@ const CustomerTiersTable = ({ onUpdate }) => {
       const response = await getAdminResource('customer-tiers');
       setTiers(response.data.data || []);
       if (onUpdate) onUpdate();
-    } catch (error) {
+    } catch (_error) {
       showNotification('Failed to load customer tiers', 'error');
     } finally {
       setLoading(false);
@@ -108,7 +109,7 @@ const CustomerTiersTable = ({ onUpdate }) => {
     try {
       await reloadAdminResource('customer-tiers');
       showNotification('Configuration reloaded successfully', 'success');
-    } catch (error) {
+    } catch (_error) {
       showNotification('Failed to reload configuration', 'error');
     }
   };

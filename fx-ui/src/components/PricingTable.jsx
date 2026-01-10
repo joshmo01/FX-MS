@@ -14,6 +14,7 @@ const PricingTable = ({ onUpdate }) => {
 
   useEffect(() => {
     fetchAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchAll = async () => {
@@ -26,7 +27,7 @@ const PricingTable = ({ onUpdate }) => {
       setSegments(segResp.data.data || []);
       setTiers(tierResp.data.data || []);
       if (onUpdate) onUpdate();
-    } catch (error) {
+    } catch (_error) {
       showNotification('Failed to load pricing config', 'error');
     } finally {
       setLoading(false);
@@ -35,7 +36,6 @@ const PricingTable = ({ onUpdate }) => {
 
   const getCurrentResource = () => activeSubTab === 'segments' ? 'pricing-segments' : 'pricing-tiers';
   const getCurrentData = () => activeSubTab === 'segments' ? segments : tiers;
-  const setCurrentData = (data) => activeSubTab === 'segments' ? setSegments(data) : setTiers(data);
 
   const handleCreate = () => {
     if (activeSubTab === 'segments') {
@@ -124,7 +124,7 @@ const PricingTable = ({ onUpdate }) => {
         reloadAdminResource('pricing-tiers')
       ]);
       showNotification('Configuration reloaded successfully', 'success');
-    } catch (error) {
+    } catch (_error) {
       showNotification('Failed to reload configuration', 'error');
     }
   };

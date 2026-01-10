@@ -15,7 +15,7 @@ const AdminPanel = () => {
     'pricing-segments': 0,
     'pricing-tiers': 0
   });
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   useEffect(() => {
     fetchStats();
@@ -51,17 +51,20 @@ const AdminPanel = () => {
     { id: 'pricing', label: 'Pricing Config', icon: Settings }
   ];
 
-  const StatCard = ({ title, value, icon: Icon, color }) => (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-gray-600">{title}</p>
-          <p className={`text-3xl font-bold ${color}`}>{value}</p>
+  const StatCard = ({ title, value, icon, color }) => {
+    const Icon = icon;
+    return (
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-gray-600">{title}</p>
+            <p className={`text-3xl font-bold ${color}`}>{value}</p>
+          </div>
+          <Icon className={`h-12 w-12 ${color} opacity-20`} />
         </div>
-        <Icon className={`h-12 w-12 ${color} opacity-20`} />
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="p-6">

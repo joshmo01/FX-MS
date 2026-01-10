@@ -33,6 +33,7 @@ export default function FXRulesManager() {
 
   useEffect(() => {
     fetchRules();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchRules = async () => {
@@ -115,7 +116,7 @@ export default function FXRulesManager() {
       } else {
         showNotification('Failed to delete rule', 'error');
       }
-    } catch (error) {
+    } catch (_error) {
       showNotification('Error deleting rule', 'error');
     }
   };
@@ -129,7 +130,7 @@ export default function FXRulesManager() {
       } else {
         showNotification('Failed to toggle rule', 'error');
       }
-    } catch (error) {
+    } catch (_error) {
       showNotification('Error toggling rule', 'error');
     }
   };
@@ -159,7 +160,7 @@ export default function FXRulesManager() {
       } else {
         showNotification('Failed to save rule', 'error');
       }
-    } catch (error) {
+    } catch (_error) {
       showNotification('Error saving rule', 'error');
     }
   };
@@ -197,7 +198,7 @@ export default function FXRulesManager() {
           } else {
             showNotification('Invalid JSON format', 'error');
           }
-        } catch (err) {
+        } catch (_err) {
           showNotification('Failed to parse JSON', 'error');
         }
       };
