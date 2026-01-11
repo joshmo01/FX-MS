@@ -84,7 +84,7 @@ function App() {
     setLoading(true);
     try {
       const [dealsRes, ratesRes, cbdcRes, stableRes] = await Promise.all([
-        api.getDeals({}).catch(() => ({ data: { deals: [] } })),
+        api.getDeals({}).catch((e) => { console.error('getDeals error:', e); return { data: { deals: [] } }; }),
         api.getTreasuryRates().catch(() => ({ data: { rates: {} } })),
         api.getCBDCs().catch(() => ({ data: { cbdc: [] } })),
         api.getStablecoins().catch(() => ({ data: { stablecoins: [] } })),
@@ -131,22 +131,34 @@ function App() {
         created_by: 'treasury_user',
       });
       setShowCreate(false);
-      fetchData();
-    } catch (e) { alert(e.response?.data?.detail || 'Error'); }
+      await fetchData();
+    } catch (e) {
+      console.error('Create deal error:', e);
+      alert(e.response?.data?.detail || e.message || 'Error creating deal');
+    }
   };
 
   const handleSubmit = async (id) => {
     try {
       await api.submitDeal(id, { submitted_by: 'treasury_user' });
-      fetchData();
+      await fetchData();
     } catch (e) { alert(e.response?.data?.detail || 'Error'); }
   };
 
   const handleApprove = async (id) => {
     try {
       await api.approveDeal(id, { approved_by: 'senior_treasury' });
-      fetchData();
+      await fetchData();
     } catch (e) { alert(e.response?.data?.detail || 'Error'); }
+  };
+
+  const handleCancelDeal = async (id) => {
+    const reason = prompt('Enter cancellation reason (optional):');
+    if (reason === null) return; // User clicked cancel on prompt
+    try {
+      await api.cancelDeal(id, { cancelled_by: 'treasury_user', reason: reason || undefined });
+      await fetchData();
+    } catch (e) { alert(e.response?.data?.detail || 'Error cancelling deal'); }
   };
 
   const handleCreatePricingDeal = async (e) => {
@@ -165,7 +177,7 @@ function App() {
         created_by: 'treasury_user',
       });
       setShowPricingDealCreate(false);
-      fetchData();
+      await fetchData();
       alert('Deal created successfully!');
     } catch (e) { alert(e.response?.data?.detail || 'Error creating deal'); }
   };
@@ -580,6 +592,7 @@ function App() {
                             <td className="px-6 py-4 space-x-2">
                               {d.status === 'DRAFT' && <button onClick={() => handleSubmit(d.deal_id)} className="text-blue-600 hover:underline">Submit</button>}
                               {d.status === 'PENDING_APPROVAL' && <button onClick={() => handleApprove(d.deal_id)} className="text-green-600 hover:underline">Approve</button>}
+                              {['DRAFT', 'PENDING_APPROVAL', 'ACTIVE'].includes(d.status) && <button onClick={() => handleCancelDeal(d.deal_id)} className="text-red-600 hover:underline">Cancel</button>}
                             </td>
                           </tr>
                         ))

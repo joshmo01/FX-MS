@@ -180,6 +180,9 @@ class DealsService:
         if currency_pair:
             filtered = [d for d in filtered if d["currency_pair"] == currency_pair.upper()]
         
+        # Sort by created_at descending (newest first) before pagination
+        filtered.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+        
         total = len(filtered)
         start = (page - 1) * page_size
         end = start + page_size

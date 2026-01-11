@@ -46,6 +46,7 @@ export const getDealUtilizations = (id) => API.get(`/api/v1/fx/deals/${id}/utili
 export const getDealAuditLog = (id) => API.get(`/api/v1/fx/deals/${id}/audit-log`);
 export const getActiveDeals = (params) => API.get('/api/v1/fx/deals/active', { params });
 export const getBestRate = (params) => API.get('/api/v1/fx/deals/best-rate', { params });
+export const cancelDeal = (id, data) => API.delete(`/api/v1/fx/deals/${id}`, { data });
 
 // Pricing APIs
 export const getPricingQuote = (data) => API.post('/api/v1/fx/pricing/quote', data);
