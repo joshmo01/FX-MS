@@ -153,12 +153,19 @@ function App() {
   };
 
   const handleCancelDeal = async (id) => {
-    const reason = prompt('Enter cancellation reason (optional):');
+    const reason = prompt('Enter cancellation reason:');
     if (reason === null) return; // User clicked cancel on prompt
+    if (!reason.trim()) {
+      alert('Cancellation reason is required');
+      return;
+    }
     try {
-      await api.cancelDeal(id, { cancelled_by: 'treasury_user', reason: reason || undefined });
+      await api.cancelDeal(id, { cancelled_by: 'treasury_user', cancellation_reason: reason });
       await fetchData();
-    } catch (e) { alert(e.response?.data?.detail || 'Error cancelling deal'); }
+    } catch (e) {
+      const detail = e.response?.data?.detail;
+      alert(typeof detail === 'string' ? detail : 'Error cancelling deal');
+    }
   };
 
   const handleCreatePricingDeal = async (e) => {
