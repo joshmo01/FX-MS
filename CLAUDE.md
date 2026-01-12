@@ -84,7 +84,7 @@ app/
 │   └── admin_api.py        # Reference table CRUD
 ├── services/               # Business logic layer
 │   ├── smart_routing_engine.py   # Core routing with objective-based scoring
-│   ├── deals_service.py          # Deal lifecycle: DRAFT→PENDING→ACTIVE
+│   ├── deals_service.py          # Deal lifecycle: DRAFT→PENDING→ACTIVE→CANCELLED/EXPIRED
 │   ├── pricing_service.py        # Margin calculations with tier/segment
 │   ├── fx_provider.py            # Provider configs and rate adjustments
 │   └── rules_engine/             # Dynamic JSON rules evaluation
@@ -146,7 +146,9 @@ Base path: `/api/v1/fx/`
 
 **Customer Tiers:** PLATINUM (50% discount) → GOLD → SILVER → BRONZE → RETAIL (0% discount)
 
-**Deal Workflow:** DRAFT → (submit) → PENDING_APPROVAL → (approve) → ACTIVE → EXPIRED/FULLY_UTILIZED
+**Deal Workflow:** DRAFT → (submit) → PENDING_APPROVAL → (approve) → ACTIVE → EXPIRED/FULLY_UTILIZED/CANCELLED
+
+**Deal Cancellation:** Deals in DRAFT, PENDING_APPROVAL, or ACTIVE status can be cancelled via `DELETE /deals/{id}` with `cancelled_by` and `cancellation_reason` fields required.
 
 **Rules Engine:** JSON-based conditions (currency_pair, segment, amount_range) → actions (set_margin_bps, adjust_margin_bps, select_provider)
 

@@ -112,7 +112,7 @@ src/
 
 1. **Pricing Request** → `pricing.py` → `pricing_service.py` → `rules_engine/` → applies segment/tier/currency adjustments
 2. **Route Calculation** → `routing_api.py` / `multi_rail_api.py` → `smart_routing_engine.py` → scores providers by objective
-3. **Deal Workflow** → `deals_api.py` → `deals_service.py` → DRAFT → PENDING_APPROVAL → ACTIVE lifecycle
+3. **Deal Workflow** → `deals_api.py` → `deals_service.py` → DRAFT → PENDING_APPROVAL → ACTIVE → EXPIRED/FULLY_UTILIZED/CANCELLED lifecycle
 
 ## API Base Path
 
@@ -122,7 +122,10 @@ Key endpoints:
 - `POST /routing/recommend` - Get best route recommendation
 - `POST /multi-rail/route` - Multi-rail route comparison
 - `POST /pricing/quote` - Customer-specific price quote
-- `GET/POST /deals` - Deal management
+- `GET/POST /deals` - Deal management (sorted by newest first)
+- `POST /deals/{id}/submit` - Submit deal for approval
+- `POST /deals/{id}/approve` - Approve a pending deal
+- `DELETE /deals/{id}` - Cancel a deal (requires `cancelled_by` and `cancellation_reason`)
 - `GET/POST /rules/` - Dynamic rules CRUD
 
 ## Environment Variables
@@ -148,6 +151,11 @@ Base test utilities in `../tests/base/test_base.py` provide common fixtures.
 - **Routing Objectives**: BEST_RATE, OPTIMUM, FASTEST_EXECUTION, MAX_STP
 - **Customer Tiers**: PLATINUM → RETAIL with different markup discounts
 - **Rules Engine**: JSON-based dynamic rules for provider selection and margin adjustments
+- **Deal Statuses**: DRAFT, PENDING_APPROVAL, ACTIVE, EXPIRED, FULLY_UTILIZED, CANCELLED, REJECTED
+- **Deal Actions**:
+  - Submit (DRAFT → PENDING_APPROVAL)
+  - Approve (PENDING_APPROVAL → ACTIVE)
+  - Cancel (DRAFT/PENDING_APPROVAL/ACTIVE → CANCELLED, requires reason)
 
 ## Deployment
 
